@@ -18,6 +18,9 @@
  * Birth & death routine: return the dmin value used at each iteration?
  * To do this, I need to know in advance how many iterations to run
  * for -- maybe have default mm as 40 * npts in R code?
+ * TODO: add code for periodic checks for interrupts; Brian Ripley uses:
+ * ... 	    if(attempts % 1000 == 0) R_CheckUserInterrupt();
+ * nested within his loops.  makes sense.
  */
 
 
@@ -1266,3 +1269,57 @@ void nnd_3d(Sfloat *xs, Sfloat *ys, Sfloat *zs, int n,
   *min = sqrt(min_dist);
   *idx = index;
 }
+
+
+#ifdef unused
+
+/* For reference, here is Brian Ripley's implementation of Strauss Process
+ *  taken from pps.c in VR bundle (VR/spatial/src/pps.c)
+ */
+void
+VR_simpat(Sint *npt, Sfloat *x, Sfloat *y, Sfloat *c,
+	  Sfloat *r, Sint *init)
+{
+    int   i, attempts = 0, id, j, mm, n = *npt;
+    Sfloat cc, rr, ax, ay, d, x1, y1, u;
+
+    testinit();
+    cc = *c;
+    if (cc >= 1.0) {
+	VR_pdata(npt, x, y);
+	return;
+    }
+    RANDIN;
+    ax = xu0 - xl0;
+    ay = yu0 - yl0;
+    rr = (*r) * (*r);
+    mm = 4 * n;
+    if (*init > 0) mm = 10 * mm;
+    for (i = 1; i <= mm; i++) {
+	id = floor(n * UNIF);
+	x[id] = x[0];
+	y[id] = y[0];
+	do {
+	    attempts++;
+	    x[0] = xl0 + ax * UNIF;
+	    y[0] = yl0 + ay * UNIF;
+	    u = UNIF;
+	    d = 1.0;
+	    for (j = 1; j < n; j++) {
+		x1 = x[j] - x[0];
+		y1 = y[j] - y[0];
+		if (x1 * x1 + y1 * y1 < rr) {
+		    d *= cc;
+		    if (d < u) continue;
+		}
+	    }
+	    if(attempts % 1000 == 0) R_CheckUserInterrupt();
+	}
+	while (d < u);
+    }
+    RANDOUT;
+}
+
+
+#endif
+
