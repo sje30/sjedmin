@@ -196,6 +196,65 @@ dminlulfix2 <- function(w,
   res
 }
 
+bdmin.bd <- function(w=c(0, 1000, 0, 1000),
+                     pts=matrix( runif((n1+n2)*2) * 1000, nrow=n1+n2, ncol=2),
+                     n1=100, n2=100,
+                     d1=20, d1.sd=2,
+                     d2=20, d2.sd=2,
+                     d12=12,
+                     lower = 0, upper = -1,
+                     nsweeps=10,
+                     quiet = FALSE)
+{
+  ## Bivariate dmin simulation, with birth&death algorithm.
+
+  params <- c(d1, d1.sd, d2, d2.sd, d12, lower, upper)
+  attempt <- 1
+  okay <- TRUE
+  trying <- TRUE
+  while (trying && (attempt < dminmaxattempts)) {
+    z <- .C("bdmin_bd",
+            as.double(w),
+            as.integer(n1), as.integer(n2),
+            as.double(params),
+            as.integer(nsweeps),
+            as.integer(quiet),
+            ## create memory to store return values.
+            x = as.double(pts[,1]),
+            y = as.double(pts[,2]),
+            nrejects = integer(2),
+            PACKAGE="sjedmin")
+    if (z$x[1] > 0)
+      trying <- FALSE
+    else
+      attempt <- attempt + 1
+  }
+  if (attempt >= dminmaxattempts) {
+    cat(paste ("bdmin: ", dmin, dminsd, "fail after",
+                dminmaxattempts, "tries\n"))
+    ## just make a random distribution instead of a nice mosaic.
+    z$x <- w[1] +  (runif(npts) * (w[2] - w[1]))
+    z$y <- w[3] + (runif(npts) * (w[4] - w[3]))
+    okay <- FALSE
+  }
+
+  ## Make up the return list.
+  note <- paste("bdmin")
+  res <- list(x = z$x, y = z$y, dmins = z$dmins,
+              n1=n1, n2=n2,
+              nrejects = z$nrejects, okay = okay,
+              ##args=match.call(),
+              args=list(w=w, params=params),
+              attempts = attempt, note = note)
+  class(res) <- "sjebdmin"
+  res
+}
+
+plot.sjebdmin <- function(x) {
+  plot(x$x, x$y, asp=1, pch=19,
+       col= c( rep("green", x$n1), rep("orangered", x$n2)))
+}
+
 dminlul3d <- function(wid = 1000, ht = 1000, dep=1000, npts = 200,
                       dmin = 20, dminsd = 2, lower = 0, upper = 100,
                       quiet = FALSE)

@@ -521,6 +521,159 @@ void dminlulfix2(Sfloat *pw, int *pnumcells,
   RANDOUT;
 }
 
+void bdmin_bd(Sfloat *pw, int *pn1, int *pn2,
+	      Sfloat *params,
+	      int *pnsweeps, int *pquiet,
+	      Sfloat *xpts, Sfloat *ypts, 
+	      int *nrejects)
+{
+  /* Bivariate DMIN model, with birth&death algorithm.
+   * W is the window of the field, [xmin xmax ymin ymax]
+   * N1 is number of type 1 cells, N2 number of type 2 cells.
+   * PARAMS is a vector storing the parameters for the exclusion zones.
+   * NSWEEPS is the number of sweeps to perform.
+   */
+
+  int num_rejects = 0, this_cell_rejects = 0;
+  int looking, generate_dmin;
+  int i, sweep, constraint, id;
+  int n, n1, n2;
+  Sfloat x,y;
+  Sfloat min; int idx;
+  Sfloat this_dmin;
+  Sfloat lower, upper;
+
+  Sfloat xmin, xmax, ymin, ymax, wid, ht;
+  Sfloat d1, sd1, d2, sd2, d12;
+  Sfloat dmin_mu, dmin_sd;
+  RANDIN;
+
+  /* Extract relevant exclusion zone parameters. */
+  d1  = params[0]; sd1 = params[1];
+  d2  = params[2]; sd2 = params[3];
+  d12 = params[4];
+  lower = params[5]; upper = params[6];
+  
+  sweep = *pnsweeps;
+  n1 = *pn1; n2 = *pn2; n = n1 + n2;
+  
+  xmin = pw[0]; xmax = pw[1]; ymin = pw[2]; ymax = pw[3];
+  if (!*pquiet) {
+    Rprintf("field %f %f %f %f\n", xmin, xmax, ymin, ymax);
+    Rprintf("n1 %d n2 %d\n", n1, n2);
+    Rprintf("d1 %f +/- %f d2 %f +/- %f d12 %f\n",
+	    d1, sd1, d2, sd2, d12);
+  }
+  wid = xmax - xmin; ht = ymax - ymin;
+
+  while( --sweep > 0) {
+    /*Perform one complete sweep, updating positions of cells.  */
+    if (!*pquiet) 
+      Rprintf("sweep %d\n", sweep);
+
+    for (i=0; i<n; i++) {
+
+      /* move cell i. */
+      if (i < n1) {
+	dmin_mu = d1; dmin_sd = sd1;
+      } else {
+	dmin_mu = d2; dmin_sd = sd2;
+      }
+
+      looking = 1; this_cell_rejects = 0;
+      while (looking) {
+      
+	generate_dmin = 1;
+	while (generate_dmin) {
+	  this_dmin = dmin_mu + (dmin_sd * norm_rand());
+	  if ( (this_dmin > lower) &&
+	       ((upper <0) || (this_dmin < upper)))
+	    generate_dmin = 0;
+	  /*else printf("dminlul: dmin %f outside range\n", this_dmin);*/
+	}
+
+	/* generate a trial position at random. */
+	x = xmin + (UNIF * wid); y = ymin + (UNIF * ht);
+	xpts[i] = x; ypts[i] = y;
+
+	bdmin_check(xpts, ypts, n1, n2, i,
+		    this_dmin, d12, &constraint, &id);
+
+	if (*pquiet) 
+	  Rprintf("cell %d pos %f %f constraint %d id %d\n",
+		  i, x, y, constraint, id);
+	if (constraint == 0) {
+	  /* constraints met fine. */
+	  looking = 0;
+	} else if ( constraint > 0) {
+	  /* homotypic constraint broken. */
+	  nrejects[0]++;
+	} else {
+	  /* heterotypic constraint broken. */
+	  nrejects[1]++;
+	}
+	if (looking) {
+	  this_cell_rejects++;
+	}
+      }
+      if(*pquiet) {
+	Rprintf("cell %d rejects %d\n", i, this_cell_rejects);
+      }
+    } /* next cell */
+  } /* next sweep */
+
+  if (!*pquiet) {
+    Rprintf("#rejects: %d %d\n", nrejects[0], nrejects[1]);
+  }
+  RANDOUT;
+  
+}
+
+void bdmin_check(Sfloat *xpts, Sfloat *ypts, int n1, int n2,
+		int i, Sfloat d, Sfloat d12, int *okay, int *id) {
+  /* Check whether bivariate constraints are satisfied between cell I
+   * and the neighbouring cells. */
+  /* Return values:
+   * OKAY - Set to:
+   *  0 - constraints okay.
+   * +1 -  broke the homotypic constraint.
+   * -1 -  broke the heterotypic constraint.
+   * In the case of a broken constraint, *ID stores the cell id that
+   * broke the constraint.
+   */
+
+  Sfloat x, y;			/* coords of cell being checked. */
+  Sfloat dist2, mind, dx, dy;
+  Sfloat min_sofar =-1;		/* debugging */
+  int n;			/* total number of cells */
+  int j, homotypic;
+
+  /* By default, everything okay */
+  *okay = 0; *id = -1;
+  
+  x = xpts[i]; y = ypts[i];
+  n = n1 + n2;
+
+  /* All distance comparisons done with squared distances. */
+  d *= d; d12 *= d12;
+  for (j=0; j < n; j++) {
+    if (i==j)
+      continue;
+    
+    homotypic = ( (i < n1) == (j < n1)); /* 1 iff (i,j) pair is homotypic */
+    dx = x-xpts[j]; dy = y-ypts[j];
+    dist2 = (dx*dx) + (dy*dy);
+    mind = (homotypic?d:d12);
+    if ( (min_sofar <0) || (mind < dist2))
+      min_sofar = dist2;
+    if (dist2 < mind) {
+      *okay = homotypic?1:-1;
+      *id = j;
+      break;
+    }
+  }
+
+}
 
 void dminlul3d(Sfloat *pwid, Sfloat *pht, Sfloat *pdepth, int *pnumcells,
 	       Sfloat *pdmin, Sfloat *psd,
