@@ -770,9 +770,9 @@ void dminlul3d(Sfloat *pwid, Sfloat *pht, Sfloat *pdepth, int *pnumcells,
 
 
   if (!*quiet) {
-    Rprintf("#todo: 3-d packing density needs recalculating.\n");
-    Rprintf("#rejects %d\tdminlul packing density %.3f\n", num_rejects,
-	    ((*pnumcells * PI * *pdmin * *pdmin)/( 4 * *pwid * *pht)));
+    Rprintf("#rejects %d\tdminlul3d packing density %.3f\n", num_rejects,
+	    ((*pnumcells * PI * 1/8 * *pdmin * *pdmin * *pdmin)/
+	     ( (3.0/4.0) * *pdepth * *pwid * *pht)));
   }
 
 
@@ -900,22 +900,114 @@ void hlookup(Sfloat *h, Sfloat *ds, int *n, Sfloat *d, Sfloat *res)
     }
   }
 }
+
+void pipp2_lookup(Sfloat *pw, int *pn1, int *pn2,
+		  Sfloat *ph1, Sfloat *pd1, int *hlen1,
+		  Sfloat *ph2, Sfloat *pd2, int *hlen2,
+		  Sfloat *ph12, Sfloat *pd12, int *hlen12,
+		  int *pnsweeps, int *pverbose,
+		  Sfloat *xpts, Sfloat *ypts, int *okay)
+{
+  /* PIPP2: Bivariate Pairwise interaction point processes.
+   * Like pipp_lookup, but bivariate, so we have three h functions():
+   * h1 - type 1
+   * h2 - type 2
+   * h12 - h for cross type.
+   * The initial points are stored in XPTS and YPTS, with type 1 points
+   * given first, followed by type 2 points.
+   * On exit, if *OKAY is 1, the simulation was fine.
+   */
   
+  int num_rejects = 0, this_cell_rejects;
+  int looking, nrejects;
+  int i, j, sweep, constraint, id;
+  int n, n1, n2;
+  Sfloat x,y;
+  Sfloat min; int idx;
+  Sfloat prob, dx, dy, dist, p;
+  Sfloat lower, upper;
+  Sfloat *h_homo, *d_homo;
+  int *len_homo;
 
+  Sfloat xmin, xmax, ymin, ymax, wid, ht;
+  RANDIN;
 
-#ifdef unused
-Sfloat hlookup(Sfloat *ph, Sfloat *ph_inc, Sfloat *ph_n, Sfloat *d) {
-  /* Find h(d) from the lookup table.
-   * All args given as pointers so that we can call it from R to check. */
-  int index;
-  index = (int) (*d/ *ph_inc);
-  if (index >= *ph_n)
-    return 1.0;			/* Assume end value. */
-  else {
-    return ph[index];		/* Could interpolate? */
+  sweep = *pnsweeps;
+  n1 = *pn1; n2 = *pn2; n = n1+ n2;
+  xmin = pw[0]; xmax = pw[1]; ymin = pw[2]; ymax = pw[3];
+  if (1 && *pverbose) {
+    Rprintf("field %f %f %f %f\n", xmin, xmax, ymin, ymax);
+    Rprintf("npts %d (%d type 1; %d type 2)\n", n, n1, n2);
+    Rprintf("LUT h1 has %d entries in range (%f, %f) to (%f, %f)\n",
+	    *hlen1, pd1[0], ph1[0], pd1[(*hlen1)-1], ph1[(*hlen1)-1]);
+    Rprintf("LUT h2 has %d entries in range (%f, %f) to (%f, %f)\n",
+	    *hlen2, pd2[0], ph2[0], pd2[(*hlen2)-1], ph2[(*hlen2)-1]);
+    Rprintf("LUT h12 has %d entries in range (%f, %f) to (%f, %f)\n",
+	    *hlen12, pd12[0], ph12[0], pd12[(*hlen12)-1], ph12[(*hlen12)-1]);
   }
+  wid = xmax - xmin; ht = ymax - ymin;
+
+  *okay = 1;			/* assume simulation will be okay. */
+  while( sweep-- > 0) {
+    /*Perform one complete sweep, updating positions of cells.  */
+    if (*pverbose) 
+      Rprintf("sweep %d\n", sweep);
+
+    for (i=0; i<n; i++) {
+
+      /* move cell i. */
+
+      if (i<n1) {
+	/* Cell I is type 1. */
+	h_homo = ph1; d_homo = pd1; len_homo = hlen1;
+      } else {
+	/* Cell I is type 2. */
+	h_homo = ph2; d_homo = pd2; len_homo = hlen2;
+      }
+      
+      looking = 1; this_cell_rejects = 0;
+      while (looking) {
+      
+	/* generate a trial position at random. */
+	x = xmin + (UNIF * wid); y = ymin + (UNIF * ht);
+	xpts[i] = x; ypts[i] = y;
+
+	prob = 1;
+	for (j=0; j<n; j++) {
+	  if (i!=j) {
+	    dx = xpts[j] - x; dy = ypts[j] - y;
+	    dist = sqrt( (dx*dx) + (dy*dy) );
+	    /* Do we have a homotypic or heterotypic interaction between
+	     * cell I and cell J ? */
+	    if ( ( i < n1 ) == (j < n1)) {
+	      /* Homotypic interaction between (I,J) */
+	      hlookup(h_homo, d_homo, len_homo, &dist, &p);
+	    } else {
+	      /* Homotypic interaction between (I,J) */
+	      hlookup(ph12, pd12, hlen12, &dist, &p);
+	    }
+	    prob *= p;
+	  }
+	}
+
+	if ( UNIF < prob) {
+	  /* Accept this cell position. */
+	  looking = 0;
+	} else {
+	  if (this_cell_rejects++ > 99999) {
+	    /* Taking far too long to replace one cell, so error. */
+	    Rprintf("pipp_d: trouble converging %d\n", this_cell_rejects);
+	    *okay = 0;
+	    sweep = 0; looking=0; i=n; /* end all loops */
+	  }
+	}
+      }
+    } /* next cell */
+  } /* next sweep */
+
+  RANDOUT;
+    
 }
-#endif
 
 void dminacc(Sfloat *pwid, Sfloat *pht, int *pnumcells,
 	     Sfloat *acc, Sfloat *dmax, Sfloat *inc,
