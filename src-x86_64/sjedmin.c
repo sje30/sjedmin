@@ -6,11 +6,6 @@
 #  define RANDOUT seed_out((long *)NULL)
 #  define UNIF unif_rand()
 
-/* Sfloat already defined in R.h:55
- * typedef double Sfloat;
- */
-
-
 /* TODO items:
  * Maybe pass all parameters in one vector, rather than using
  * many different arguments.  makes the C/R interface shorter.
@@ -23,6 +18,7 @@
  * nested within his loops.  makes sense.
  */
 
+#define MIN(X, Y)  ((X) < (Y) ? (X) : (Y))
 
 #define MAXREJECTS 999999
 /* This is the maximum number of cells that we can reject before
@@ -51,7 +47,11 @@ void bdmin_check(Sfloat *xpts, Sfloat *ypts, int n1, int n2,
 		 int i, Sfloat d, Sfloat d12, int *okay, int *id);
 
 void hlookup(Sfloat *h, Sfloat *ds, int *n, Sfloat *d, Sfloat *res);
-     
+
+Sfloat dist2d_tor(int tor, Sfloat x0, Sfloat y0,
+		  Sfloat x1, Sfloat y1,
+		  Sfloat wid, Sfloat ht);
+
 void pairwise_amac(Sfloat *wid, Sfloat *ht, int *numcells,
 		   Sfloat *xd1, Sfloat *p, Sfloat *b,
 		   Sfloat *xpts, Sfloat *ypts)
@@ -785,7 +785,7 @@ void dminlul3d(Sfloat *pwid, Sfloat *pht, Sfloat *pdepth, int *pnumcells,
 
 void pipp_lookup(Sfloat *pw, int *pn,
 		 Sfloat *ph, Sfloat *pd, int *hlen,
-		 int *pnsweeps, int *pverbose,
+		 int *pnsweeps, int *pverbose, int *tor,
 		 Sfloat *xpts, Sfloat *ypts, int *okay)
 {
 
@@ -838,8 +838,7 @@ void pipp_lookup(Sfloat *pw, int *pn,
 	prob = 1;
 	for (j=0; j<n; j++) {
 	  if (i!=j) {
-	    dx = xpts[j] - x; dy = ypts[j] - y;
-	    dist = sqrt( (dx*dx) + (dy*dy) );
+	    dist = dist2d_tor(*tor, x, y, xpts[j], ypts[j], wid, ht);
 	    hlookup(ph, pd, hlen, &dist, &p);
 	    prob *= p;
 	  }
@@ -904,11 +903,40 @@ void hlookup(Sfloat *h, Sfloat *ds, int *n, Sfloat *d, Sfloat *res)
   }
 }
 
+Sfloat dist2d_tor(int tor, Sfloat x0, Sfloat y0,
+		  Sfloat x1, Sfloat y1,
+		  Sfloat wid, Sfloat ht) {
+  /* Return distance between (x0,y0) and (x1, y1).
+   * If TOR is non-zero, we assume toroidal wrap-around.
+   */
+
+  Sfloat dx, dy, dxt, dyt;
+  if (tor) {
+    dx = fabs(x0-x1); dy = fabs(y0-y1);
+    dxt = MIN(dx, wid-dx);
+    dyt = MIN(dy, ht-dy);
+  } else {
+    dxt = x0-x1; dyt = y0-y1;
+  }
+  return ( sqrt( (dxt*dxt) + (dyt*dyt) ));
+  
+}
+
+Sfloat dist2d_tor_R(int *tor, Sfloat *x0, Sfloat *y0,
+		    Sfloat *x1, Sfloat *y1,
+		    Sfloat *wid, Sfloat *ht, Sfloat *d) {
+  /* Wrapper function for R, so we can test easily. */
+  
+  *d = dist2d_tor(*tor, *x0, *y0, *x1, *y1, *wid, *ht);
+
+}
+
 void pipp2_lookup(Sfloat *pw, int *pn1, int *pn2,
 		  Sfloat *ph1, Sfloat *pd1, int *hlen1,
 		  Sfloat *ph2, Sfloat *pd2, int *hlen2,
 		  Sfloat *ph12, Sfloat *pd12, int *hlen12,
 		  int *pnsweeps, int *pverbose, int *pfix,
+		  int *tor,
 		  Sfloat *xpts, Sfloat *ypts, int *okay)
 {
   /* PIPP2: Bivariate Pairwise interaction point processes.
@@ -993,8 +1021,8 @@ void pipp2_lookup(Sfloat *pw, int *pn1, int *pn2,
 	prob = 1;
 	for (j=0; j<n; j++) {
 	  if (i!=j) {
-	    dx = xpts[j] - x; dy = ypts[j] - y;
-	    dist = sqrt( (dx*dx) + (dy*dy) );
+	    /* dx = xpts[j] - x; dy = ypts[j] - y; */
+	    dist = dist2d_tor(*tor, x, y, xpts[j], ypts[j], wid, ht);
 	    /* Do we have a homotypic or heterotypic interaction between
 	     * cell I and cell J ? */
 	    if ( ( i < n1 ) == (j < n1)) {
