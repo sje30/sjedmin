@@ -457,7 +457,7 @@ dminlul3d <- function(wid = 1000, ht = 1000, dep=1000, npts = 200,
   res <- list(x = z$x, y = z$y, z=z$z, dmins = z$dmins,
               nrejects = z$nrejects, okay = okay,
               attempts = attempt, note = note)
-  class(res) <- "sjedmin"
+  class(res) <- "sjedmin3d"
   res
 }
 
