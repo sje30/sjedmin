@@ -402,7 +402,7 @@ void dminlul(Sfloat *pwid, Sfloat *pht, int *pnumcells,
   RANDOUT;
 }
 
-void dminlulfix2(Sfloat *pwid, Sfloat *pht, int *pnumcells,
+void dminlulfix2(Sfloat *pw, int *pnumcells,
 		 Sfloat *pdmin, Sfloat *psd,
 		 Sfloat *plower, Sfloat *pupper,
 		 int *quiet,
@@ -429,10 +429,14 @@ void dminlulfix2(Sfloat *pwid, Sfloat *pht, int *pnumcells,
   Sfloat this_dmin;
   Sfloat lower, upper;
 
+  Sfloat xmin, xmax, ymin, ymax, wid, ht;
 
 
   RANDIN;
 
+  xmin = pw[0]; xmax = pw[1]; ymin = pw[2]; ymax = pw[3];
+  /*Rprintf("%f %f %f %f\n", xmin, xmax, ymin, ymax);*/
+  wid = xmax - xmin; ht = ymax - ymin;
   lower = *plower; upper = *pupper;
   for (i=0; i<*pnumcells; i++) {
 
@@ -450,7 +454,7 @@ void dminlulfix2(Sfloat *pwid, Sfloat *pht, int *pnumcells,
 
       /*Rprintf("this val %lf\n", this_dmin); */
 
-      x = UNIF * (*pwid); y = UNIF * (*pht);
+      x = xmin + (UNIF * wid); y = ymin + (UNIF * ht);
       
       nnd_n( xpts, ypts, i, x, y, &idx, &min);
       /*min = 1000; */
@@ -497,7 +501,7 @@ void dminlulfix2(Sfloat *pwid, Sfloat *pht, int *pnumcells,
 
   if (!*quiet)
     Rprintf("#rejects %d\tdminlul packing density %.3f\n", num_rejects,
-	    ((*pnumcells * PI * *pdmin * *pdmin)/( 4 * *pwid * *pht)));
+	    ((*pnumcells * PI * *pdmin * *pdmin)/( 4 * wid * ht)));
 
   RANDOUT;
 }
