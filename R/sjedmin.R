@@ -39,9 +39,11 @@ dminsd <- function(wid = 1000, ht = 1000, npts = 200,
 
   ## Make up the return list.
   note <- paste("dminsd", dmin, dminsd)
-  list(x = z$x, y = z$y, dmins = z$dmins, nrejects = z$nrejects, okay = okay,
-       attempts = attempt, note = note)
-  
+  res <- list(x = z$x, y = z$y, dmins = z$dmins,
+              nrejects = z$nrejects, okay = okay,
+              attempts = attempt, note = note)
+  class(res) <- "sjedmin"
+  res
 }
 
 
@@ -81,9 +83,11 @@ dminl <- function(wid = 1000, ht = 1000, npts = 200,
 
   ## Make up the return list.
   note <- paste("dminl", dmin, dminsd)
-  list(x = z$x, y = z$y, dmins = z$dmins, nrejects = z$nrejects, okay = okay,
-       attempts = attempt, note = note)
-  
+  res <- list(x = z$x, y = z$y, dmins = z$dmins,
+              nrejects = z$nrejects, okay = okay,
+              attempts = attempt, note = note)
+  class(res) <- "sjedmin"
+  res
 }
 
 
@@ -129,6 +133,7 @@ dminlul <- function(wid = 1000, ht = 1000, npts = 200,
               nrejects = z$nrejects, okay = okay,
               attempts = attempt, note = note)
   class(res) <- "sjedmin"
+  res
 }
 
 plot.sjedmin <- function(x) {
@@ -173,9 +178,11 @@ dminlulbd <- function(wid = 1000, ht = 1000, npts = 200,
 
   ## Make up the return list.
   note <- paste("dminlulbd", dmin, dminsd, lower, upper)
-  list(x = z$x, y = z$y, dmins = z$dmins, nrejects = z$nrejects, okay = okay,
-       attempts = attempt, note = note)
-  
+  res <- list(x = z$x, y = z$y, dmins = z$dmins,
+              nrejects = z$nrejects, okay = okay,
+              attempts = attempt, note = note)
+  class(res) <- "sjedmin"
+  res
 }
 
 
@@ -219,13 +226,16 @@ dminacc <- function(wid = 1000, ht = 1000, npts = 200,
 
   ## Make up the return list.
   note <- paste("dmin.acc", dmax)
-  list(x = z$x, y = z$y, dmins = z$dmins, nrejects = z$nrejects, okay = okay,
-       attempts = attempt, note = note)
-  
+  res <- list(x = z$x, y = z$y, dmins = z$dmins,
+              nrejects = z$nrejects, okay = okay,
+              attempts = attempt, note = note)
+  class(res) <- "sjedmin"
+  res
 }
 
 make.acc <- function (l, dmax) {
   ## Make an acceptance function from a L function.
+  ## This comes from the Shapiro et al. (1985) paper.
   ## This is useful for dmin.acc() and dminacc.bd()
   k <- l^2 * pi; kmax <- k[length(k)] 
   acc <- k / kmax; acc <- pmin(acc, 1.0)
@@ -237,7 +247,6 @@ dminacc.bd <- function(wid = 1000, ht = 1000, npts = 200,
                     acc, dmax = 10, inc=1.0)
 {
   ## Birth and death version of dminacc().
-  
   attempt <- 1
   okay <- TRUE
   trying <- TRUE
@@ -270,9 +279,11 @@ dminacc.bd <- function(wid = 1000, ht = 1000, npts = 200,
 
   ## Make up the return list.
   note <- paste("dminacc.bd", dmax)
-  list(x = z$x, y = z$y, dmins = z$dmins, nrejects = z$nrejects, okay = okay,
-       attempts = attempt, note = note)
-  
+  res <- list(x = z$x, y = z$y, dmins = z$dmins,
+              nrejects = z$nrejects, okay = okay,
+              attempts = attempt, note = note)
+  class(res) <- "sjedmin"
+  res
 }
 
 
@@ -299,8 +310,9 @@ damac <- function(wid = 1000, ht = 1000, npts = 200,
 
   ## Make up the return list.
   note <- paste("damac", d1, beta, upper)
-  list(x = z$x, y = z$y, note = note)
-  
+  res <- list(x = z$x, y = z$y, note = note)
+
+  res
 }
 
 hamac <- function(t, lower, upper, beta)
@@ -320,5 +332,21 @@ hamac <- function(t, lower, upper, beta)
   z$h
 }
 
-
-
+sjennd <- function(x, y, a, b) {
+  ## Call the Nearest neighbour distance function.
+  ## x,y are  vectors of x,y coords of a group of points.  (a,b) is one point
+  ## in space.  Return the id (and distance) of the point closest to (a,b).
+  z <- .C("sjenndp",
+          as.double(x),
+          as.double(y),
+          as.integer(length(x)),
+          as.double(a), as.double(b),
+          as.double(-1),
+          ## create memory to store return values.
+          id = integer(1),
+          dist = double(1)
+          )
+  zero.one.offset <- 1                  #C arrays are zero-based.
+  res <- list(id=z$id + zero.one.offset, dist=z$dist)
+  res
+}
