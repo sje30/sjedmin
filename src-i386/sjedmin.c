@@ -26,6 +26,15 @@ void nnd_n(Sfloat *xs, Sfloat *ys, int n, Sfloat a, Sfloat b,
 void nnd(Sfloat *xs, Sfloat *ys, int n, Sfloat a, Sfloat b, int ignore,
 	 int *idx, Sfloat *min);
 
+void nnd_n_3d(Sfloat *xs, Sfloat *ys, Sfloat *zs,
+	      int n, Sfloat a, Sfloat b, Sfloat c,
+	      int *idx, Sfloat *min);
+
+void nnd_3d(Sfloat *xs, Sfloat *ys, Sfloat *zs, int n,
+	    Sfloat a, Sfloat b, Sfloat c, int ignore,
+	    int *idx, Sfloat *min);
+
+     
 void pairwise_amac(Sfloat *wid, Sfloat *ht, int *numcells,
 		   Sfloat *xd1, Sfloat *p, Sfloat *b,
 		   Sfloat *xpts, Sfloat *ypts)
@@ -393,6 +402,201 @@ void dminlul(Sfloat *pwid, Sfloat *pht, int *pnumcells,
   RANDOUT;
 }
 
+void dminlulfix2(Sfloat *pwid, Sfloat *pht, int *pnumcells,
+		 Sfloat *pdmin, Sfloat *psd,
+		 Sfloat *plower, Sfloat *pupper,
+		 int *quiet,
+		 Sfloat *xpts, Sfloat *ypts, 
+		 Sfloat *dmins, int *nrejects,
+		 Sfloat *x2, Sfloat *y2, int *n2, Sfloat *d12)
+
+{
+  /* Create NUMCELLS cells distributed in an area of size wid*ht.
+   * Minimum distance between cells should be at least dmin.  On exit,
+   * we return an array of cells stored in (xs, ys).  NJRECTS stores
+   * the number of rejected cells.  This is Lucia's version, where a
+   * new dmin value is created every time, regardless of whether the
+   * trial cell was accepted or not.  Also provide arguments LOWER
+   * and UPPER: dmin values outside this range are rejected.
+   */
+  
+
+  int num_rejects = 0, this_cell_rejects = 0;
+  int looking, generate_dmin;
+  int i;
+  Sfloat x,y;
+  Sfloat min; int idx;
+  Sfloat this_dmin;
+  Sfloat lower, upper;
+
+
+
+  RANDIN;
+
+  lower = *plower; upper = *pupper;
+  for (i=0; i<*pnumcells; i++) {
+
+    looking = 1; this_cell_rejects = 0;
+    while (looking) {
+
+      generate_dmin = 1;
+      while (generate_dmin) {
+	this_dmin = *pdmin + (*psd * norm_rand());
+	if ( (this_dmin > lower) &&
+	     ((upper <0) || (this_dmin < upper)))
+	  generate_dmin = 0;
+	/*else printf("dminlul: dmin %f outside range\n", this_dmin);*/
+      }
+
+      /*Rprintf("this val %lf\n", this_dmin); */
+
+      x = UNIF * (*pwid); y = UNIF * (*pht);
+      
+      nnd_n( xpts, ypts, i, x, y, &idx, &min);
+      /*min = 1000; */
+      if ( (min < this_dmin) ) {
+	/* || (min > upper)*/
+	/* Cannot test if the min distance is too big... this won't
+	 * work for early cells!  i.e. when putting the first cell in,
+	 * the upper distance will be the value returned by nnd_n,
+	 * ie.s. some huge number. */
+
+	 
+	/* reject cell and try another. */
+	num_rejects++;
+	this_cell_rejects++;
+	if (num_rejects > MAXREJECTS) {
+	  /* If we cannot fit more cells in, return and indicate error
+	   * by setting first x coordinate to negative value.
+	   */
+	  printf("dminlul error: num_rejects is too high (%s:%d)\n",
+		 __FILE__, __LINE__);
+	  xpts[0] = -1;
+	  RANDOUT;
+	  return;
+	}
+      }
+      else {
+	/* min dist for this population okay, but what about 2nd population? */
+	nnd_n( x2, y2, *n2, x, y, &idx, &min);
+	if ( min > *d12)
+	  looking = 0;		/* set if we are okay for 2nd popn */
+	else {
+	  nrejects[*pnumcells]++; /* keep track of rejects */
+	  ;
+	  /*Rprintf("point %f %f too close to 2nd pop cell %d\n", x, y, idx);*/
+	}
+      }	
+
+    }
+    /* Accept this cell. */
+    dmins[i] = this_dmin;
+    xpts[i] = x; ypts[i] = y;
+    nrejects[i] = this_cell_rejects;
+  }
+
+  if (!*quiet)
+    Rprintf("#rejects %d\tdminlul packing density %.3f\n", num_rejects,
+	    ((*pnumcells * PI * *pdmin * *pdmin)/( 4 * *pwid * *pht)));
+
+  RANDOUT;
+}
+
+
+void dminlul3d(Sfloat *pwid, Sfloat *pht, Sfloat *pdepth, int *pnumcells,
+	       Sfloat *pdmin, Sfloat *psd,
+	       Sfloat *plower, Sfloat *pupper,
+	       int *quiet,
+	       Sfloat *xpts, Sfloat *ypts, Sfloat *zpts,
+	       Sfloat *dmins, int *nrejects)
+
+{
+  /* 3-d version of dminlul.
+   * Create NUMCELLS cells distributed in an volume of size wid*ht*depth.
+   * Minimum distance between cells should be at least dmin.  On exit,
+   * we return an array of cells stored in (xs, ys, zs).  NJRECTS stores
+   * the number of rejected cells.  This is Lucia's version, where a
+   * new dmin value is created every time, regardless of whether the
+   * trial cell was accepted or not.  Also provide arguments LOWER
+   * and UPPER: dmin values outside this range are rejected.
+   */
+  
+
+  int num_rejects = 0, this_cell_rejects = 0;
+  int looking, generate_dmin;
+  int i;
+  Sfloat x,y,z;
+  Sfloat min; int idx;
+  Sfloat this_dmin;
+  Sfloat lower, upper;
+
+
+
+  RANDIN;
+
+  lower = *plower; upper = *pupper;
+  for (i=0; i<*pnumcells; i++) {
+
+    looking = 1; this_cell_rejects = 0;
+    while (looking) {
+
+      generate_dmin = 1;
+      while (generate_dmin) {
+	this_dmin = *pdmin + (*psd * norm_rand());
+	if ( (this_dmin > lower) &&
+	     ((upper <0) || (this_dmin < upper)))
+	  generate_dmin = 0;
+	/*else printf("dminlul: dmin %f outside range\n", this_dmin);*/
+      }
+
+      /*Rprintf("this val %lf\n", this_dmin); */
+
+      x = UNIF * (*pwid); y = UNIF * (*pht); z = UNIF * (*pdepth); 
+      
+      nnd_n_3d( xpts, ypts, zpts, i, x, y, z, &idx, &min);
+      if ( (min < this_dmin) ) {
+	/* || (min > upper)*/
+	/* Cannot test if the min distance is too big... this won't
+	 * work for early cells!  i.e. when putting the first cell in,
+	 * the upper distance will be the value returned by nnd_n,
+	 * ie.s. some huge number. */
+
+	 
+	/* reject cell and try another. */
+	num_rejects++;
+	this_cell_rejects++;
+	if (num_rejects > MAXREJECTS) {
+	  /* If we cannot fit more cells in, return and indicate error
+	   * by setting first x coordinate to negative value.
+	   */
+	  printf("dminlul error: num_rejects is too high (%s:%d)\n",
+		 __FILE__, __LINE__);
+	  xpts[0] = -1;
+	  RANDOUT;
+	  return;
+	}
+      }
+      else {
+	looking = 0;
+      }
+    }
+    /* Accept this cell. */
+    dmins[i] = this_dmin;
+    xpts[i] = x; ypts[i] = y; zpts[i] = z;
+    nrejects[i] = this_cell_rejects;
+  }
+
+
+  if (!*quiet) {
+    Rprintf("#todo: 3-d packing density needs recalculating.\n");
+    Rprintf("#rejects %d\tdminlul packing density %.3f\n", num_rejects,
+	    ((*pnumcells * PI * *pdmin * *pdmin)/( 4 * *pwid * *pht)));
+  }
+
+
+  RANDOUT;
+}
+
 
 void dminacc(Sfloat *pwid, Sfloat *pht, int *pnumcells,
 	     Sfloat *acc, Sfloat *dmax, Sfloat *inc,
@@ -581,3 +785,58 @@ void nnd(Sfloat *xs, Sfloat *ys, int n, Sfloat a, Sfloat b, int ignore,
   *idx = index;
 }
   
+
+void nnd_n_3d(Sfloat *xs, Sfloat *ys, Sfloat *zs,
+	      int n, Sfloat a, Sfloat b, Sfloat c,
+	      int *idx, Sfloat *min)
+{
+  /* Return index (IDX) and distance (MIN) of cell closest to point (A,B,C).
+   * The N datapoints are stored in XS[],  YS[], ZS[]/
+   */
+  if (n==0) {
+    *idx = -1; *min = MAXDISTANCE;
+
+    /* If n=0, no other cells have yet been positioned, so there is no
+     * nearest neighbour. Hence, we just return some large distance to
+     * indicate that fact. May be better to check that idx is less than zero,
+     * since MAXDISTANCE may sometime be exceeded. */
+  } else {
+    nnd_3d(xs, ys, zs, n, a, b, c, -1, idx, min);
+  }
+}
+
+void nnd_3d(Sfloat *xs, Sfloat *ys, Sfloat *zs, int n,
+	    Sfloat a, Sfloat b, Sfloat c, int ignore,
+	    int *idx, Sfloat *min)
+{
+  /* Return index (IDX) and distance (MIN) of cell closest to point (A,B,C).
+   * The N datapoints are stored in XS[], YS[], ZS[] .
+   * In comparison to nnd_n(), cell number IGNORE is not allowed to be
+   * the closest cell.
+   */
+  int i;
+  int index = -1; Sfloat min_dist = 0;
+
+  int first = 1;		/* check for 1st distance comparison. */
+
+  Sfloat x, y, z, dx, dy, dz, dist;
+  
+  for (i=0; i<n; i++) {
+    if (i==ignore) {
+      continue;
+    }
+    
+    x = xs[i]; y = ys[i]; z = zs[i];
+    dx = x - a; dy = y - b;  dz = z - c;
+    dist = (dx*dx) + (dy*dy) + (dz*dz);
+    if ( first || (dist < min_dist)) {
+      first = 0;
+      index = i;
+      min_dist = dist;
+    }
+    
+  }
+
+  *min = sqrt(min_dist);
+  *idx = index;
+}
