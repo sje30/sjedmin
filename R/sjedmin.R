@@ -139,7 +139,8 @@ dminlul <- function(wid = 1000, ht = 1000, npts = 200,
   res
 }
 
-dminlulfix2 <- function(wid = 1000, ht = 1000, npts = 200,
+dminlulfix2 <- function(w,
+                        npts = 200,
                         dmin = 20, dminsd = 2, lower = 0, upper = 100,
                         quiet = FALSE,
                         p2=matrix( c(100, 100, 200, 400), nrow=2),
@@ -151,8 +152,7 @@ dminlulfix2 <- function(wid = 1000, ht = 1000, npts = 200,
   trying <- TRUE
   while (trying && (attempt < dminmaxattempts)) {
     z <- .C("dminlulfix2",
-            as.double(wid),
-            as.double(ht),
+            as.double(w),
             as.integer(npts),
             as.double(dmin),
             as.double(dminsd),
@@ -176,18 +176,19 @@ dminlulfix2 <- function(wid = 1000, ht = 1000, npts = 200,
     cat(paste ("dminlul: ", dmin, dminsd, "fail after",
                 dminmaxattempts, "tries\n"))
     ## just make a random distribution instead of a nice mosaic.
-    z$x <- (runif(npts) * wid)
-    z$y <- (runif(npts) * ht)
+    z$x <- w[1] +  (runif(npts) * (w[2] - w[1]))
+    z$y <- w[3] + (runif(npts) * (w[4] - w[3]))
     okay <- FALSE
   }
 
   ## Make up the return list.
   note <- paste("dminlulfix2", dmin, dminsd, lower, upper,
+                "d12", d12,
                 (if (!okay) "NOT OKAY"))
   res <- list(x = z$x, y = z$y, dmins = z$dmins,
               nrejects = z$nrejects, okay = okay,
               ##args=match.call(),
-              args=list(wid=wid, ht=ht, p2=p2, d12=d12),
+              args=list(w=w, dmin=dmin, dminsd=dminsd, p2=p2, d12=d12),
               attempts = attempt, note = note)
   class(res) <- "sjedmin2"
   res
@@ -234,7 +235,7 @@ dminlul3d <- function(wid = 1000, ht = 1000, dep=1000, npts = 200,
   }
 
   ## Make up the return list.
-  note <- paste("dminlul", dmin, dminsd, lower, upper,
+  note <- paste("dminlul", dmin, dminsd, lower, upper, 
                 (if (!okay) "NOT OKAY"))
   res <- list(x = z$x, y = z$y, z=z$z, dmins = z$dmins,
               nrejects = z$nrejects, okay = okay,
@@ -252,7 +253,10 @@ plot.sjedmin <- function(x) {
 plot.sjedmin2 <- function(x, r1=12, r2=r1) {
   ## Show the results of a dmin simulation.
   ## r1 is radius of cell 1; r2 is radius of cell 2.
-  plot(NA, xlim=c(0, x$args$wid), ylim=c(0,x$args$ht), asp=1,main=x$note)
+  plot(NA,
+       xlim=c(x$args$w[1], x$args$w[2]),
+       ylim=c(x$args$w[3], x$args$w[4]),
+       asp=1,main=x$note)
   symbols(x$x, x$y, circles=rep(r1, length(x$x)),
           inch=FALSE, add=TRUE)
   symbols(x$args$p2, circles=rep( r2, dim(x$args$p2)[1]),
