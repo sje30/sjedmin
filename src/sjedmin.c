@@ -339,7 +339,8 @@ void dminlul(Sfloat *pwid, Sfloat *pht, int *pnumcells,
       generate_dmin = 1;
       while (generate_dmin) {
 	this_dmin = *pdmin + (*psd * norm_rand());
-	if ( (this_dmin > lower) && (this_dmin < upper))
+	if ( (this_dmin > lower) &&
+	     ( (upper < 0) || (this_dmin < upper)) )
 	  generate_dmin = 0;
 	/*else printf("dminlul: dmin %f outside range\n", this_dmin);*/
       }
