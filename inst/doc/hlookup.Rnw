@@ -1,0 +1,263 @@
+% -*- mode: noweb; noweb-default-code-mode: R-mode; -*-
+\documentclass[12pt]{article}
+
+%% Option pdf=F inhibits and pdf files being made.  Don't see the point
+%% here, since LaTeX includes just the .eps file.
+\SweaveOpts{echo=T,pdf=F,eval=T}
+
+%% By including Sweave.sty myself, I can then override fonts loaded by that
+%% package, and use times.
+\usepackage{/usr/lib/R/share/texmf/Sweave}
+\usepackage{mathptmx}
+
+\usepackage[a4paper,margin=2cm,noheadfoot]{geometry}
+\usepackage{amsmath,url}
+\begin{document}
+
+
+\title{Simulating spatial functions with h() functions in lookup table
+form}
+\date{\today}
+\author{Stephen Eglen}
+
+\maketitle
+
+
+(This document is created from the R source file, hlookup.Rnw which is
+found in the extras subdirectory of the sjedmin package.)
+
+
+\section{The h function}
+
+<<echo=F>>=
+invisible(.libPaths( Sys.getenv("MYRLIB")))
+library(sjedmin)
+@ 
+
+The h function can be used in a pairwise interactiona point process
+(PIPP) model to specify interactions between pairs of cells.  The h
+function can be given in a program either as a function, with
+parameters controlloing its shape, or as a lookup table (LUT).  The
+advantage of a LUT is that gives us a lot of freedom in deciding what
+kinds of h() functions we want to use when simulating spatial point
+patterns.
+
+By a LUT I simply mean a table where for certain distances, $d$, we
+provide the corresponding value of $h(d)$, e.g. here is a LUT for a
+simple step function around the point $d=10$:
+
+<<echo=T>>=
+h <- function(d) {
+  ifelse(d>20, 1, 0)
+}
+
+d <- seq(from=6, to=30, by=2)
+
+h1 <- h(d)
+print(lut1 <- rbind(d, h1))
+@
+
+So, in this LUT, if we want to find the value of h() when d=24, we
+just lookup the corresponding value in the LUT.  
+
+In my code, linear interpolation between entries is used, which can be
+a little confusing, especially in the case of a step function:
+
+<<echo=T>>=
+hlookup(d, h1, 21)
+@
+
+
+Here is a more natural example, using the h() parameterisation
+suggeted by Peter recently.
+
+<<fig=TRUE>>=
+hpar <- function(d,theta) {
+  ## Choice of h() suggested by Peter.
+  delta<-theta[1]
+  sigma<-theta[2]
+  kappa<-theta[3]
+  res <- (0*(d<delta)) + (d>=delta)*(1-exp(-((d-delta)/sigma)^kappa))
+  if (any (is.nan(res)))
+    res[ which(is.nan(res))] <- 0
+
+  res
+}
+
+theta <- c(35, 70, 4)
+
+x <- seq(from=0, to=200, by=1)          #just used for plotting purposes.
+plot(x, hpar(x, theta), type='l')
+x.lut <- seq(from=30, to=160, by=10)
+y.lut <- hpar(x.lut, theta)
+points(x.lut, y.lut, pch=19, col='red')
+lines(x, sapply(x, function(d) {hlookup(y.lut, x.lut, d)}), col='red')
+@ 
+
+Here, the black curve is the true h() function from the parameteric h
+function; the red circles are the entries from the LUT (x.lut,
+y.lut).  The hlookup() routine linearly interpolates between these LUT
+entries to produce a close approximatition to the real function.  (So
+close, that hopefully the underlying black curve may not be visible.)
+
+
+The hlookup() function makes several assumptions about the LUT:
+\begin{enumerate}
+\item The d entries (distance) are ordered, smallest first.
+\item Below the first entry in the LUT, it is assumed that h(d)=0.
+\item After the last entry in the LUT, it is assumed that h(d)=1.
+\end{enumerate}
+These last two points can be seen in the example above, since x.lut
+is only in the range [30,160].
+
+
+
+\section{Simulating univariate spatial patterns}
+
+The routine pipp\_lookup() will take an h() function in the form of a
+LUT and simulate a pattern according to that h function.  Here is an
+example, using the previous LUT:
+
+<<>>=
+w <- c(200, 1500, 300, 1000)
+npts <- 100
+p <- pipp.lookup(w=w, n1=npts, pts=NULL,
+                 h=y.lut, d=x.lut, nsweeps=10, verbose=F)
+@ 
+
+<<fig=TRUE>>=
+plot(p)
+@ 
+
+Compare this with a plot where the interactions are over smaller
+distances:
+<<fig=TRUE>>=
+p <- pipp.lookup(w=w, n1=npts, pts=NULL,
+                 h=hpar(x.lut, theta=c(35, 50, 1)), 
+                 d=x.lut, nsweeps=10, verbose=F)
+plot(p)
+@ 
+
+The arguments to pipp.lookup are:
+\begin{description}
+\item[w] Sampling window, given as (xlo, xhi, ylo, yhi).
+\item[n1] Number of points to simulate.
+\item[pts] Initial set of points to start moving, if not NULL.  If
+  given, the points must be given as an array of size (n1,2).
+\item[h] The h values (y-axis values) for the LUT.
+\item[d] The d values (x-axis values) for the LUT.
+\item[nsweeps] The number of sweeps (where one sweep consists of
+  moving all cells, in turn, once).
+\item[verbose] A debugging argument.
+\end{description}
+
+
+
+\subsection{Non-parametric estimates of h()}
+
+
+Note that we can also use the spatstat library to compute a non
+parametric estimate of h() and then directly simulate from that
+estimate.  We use the spatstat library to compute an estimate of h()
+for the on amacrine cells, and then simulate them.
+
+<<>>=
+library(spatstat)
+data(amacrine)
+amac.on <- unmark(amacrine[amacrine$marks == "on"])
+rs <- seq(from=0.025, by=0.025, length=10)
+
+qs <- quadscheme(amac.on, method="grid", ntile=c(40,30))
+x <- ppm(qs, ~1, PairPiece(r = rs), correction="isotropic")
+
+## Now get the LUT entries.
+h <- summary(x)$interaction$printable
+if (any(is.na(h)))
+  h[which(is.na(h))] <- 0
+
+x <- apply(rbind(rs, c(0, rs[1:(length(rs)-1)])), 2, mean)
+
+
+
+## Now simulate using (x,h) as a LUT.
+p <- pipp.lookup(n1=amac.on$n, pts=NULL,
+                 w=c(amac.on$window[2]$xrange, amac.on$window[3]$yrange),
+                 h=h, d=x,nsweeps=10, verbose=F)
+
+@ 
+
+<<fig=TRUE>>=
+par(mfrow=c(2,2))
+plot(amac.on)
+plot(x, h, main='non par estimate of h() for amac.on', type='l')
+plot(p, main='sim ofamac.on from pipp.lookup',asp=1)
+@ 
+
+
+\section{Simulating bivariate spatial patterns}
+
+A second routine, pipp2.lookup, allows us to provide three LUTs for
+simulating bivariate patterns: $h_{11}$ for interactions between type 1
+cells, $h_{22}$ for type 2 cells and $h_{12}$ for interactions between tht
+two types of cells.  An example:
+
+<<fig=TRUE,width=8>>=
+w <- c(0, 1000, 0, 1000)
+n1 <- 100; n2 <- 100
+h11.x <- seq(from=0, to=150, by=10)
+h11.y <- pnorm(h11.x, mean=90, sd=20)
+
+h22.x <- seq(from=0, to=150, by=10)
+h22.y <- pnorm(h11.x, mean=70, sd=10)
+
+h12.x <- seq(from=0, to=30, by=2)
+h12.y <- pnorm(h12.x, mean=20, sd=1)
+
+par(mfrow=c(1,2))
+plot(h11.x, h11.y, type='l', col='green')
+lines(h22.x, h22.y, col='orangered')
+lines(h12.x, h12.y, col='black')
+legend(0, 1, c(expression(h[11]), expression(h[22]), expression(h[12])),
+       text.col= c("green", "red", "black"))
+
+
+p <- pipp2.lookup(w=w, pts1=NULL, pts2=NULL, n1=n1, n2=n2,
+                  h1=h11.y, d1=h11.x,
+                  h2=h22.y, d2=h22.x,
+                  h12=h12.y, d12=h12.x,
+                  nsweeps=10, verbose=FALSE)
+plot(p)
+@
+
+As a curious example, if we make the inhibition distance for $h_{12}$
+much larger than the homotypic h() functions, we get clustering of cells:
+<<fig=TRUE,width=8>>=
+par(mfrow=c(1,2))
+h11.x <- seq(from=0, to=150, by=10)
+h11.y <- pnorm(h11.x, mean=60, sd=20)
+
+h22.x <- seq(from=0, to=150, by=10)
+h22.y <- pnorm(h11.x, mean=60, sd=10)
+
+h12.x <- seq(from=20, to=100, by=2)
+h12.y <- pnorm(h12.x, mean=80, sd=1)
+
+plot(h11.x, h11.y, type='l', col='green')
+lines(h22.x, h22.y, col='orangered')
+lines(h12.x, h12.y, col='black')
+legend(0, 1, c(expression(h[11]), expression(h[22]), expression(h[12])),
+       text.col= c("green", "red", "black"))
+
+p <- pipp2.lookup(w=w, pts1=NULL, pts2=NULL, n1=n1, n2=n2,
+                  h1=h11.y, d1=h11.x,
+                  h2=h22.y, d2=h22.x,
+                  h12=h12.y, d12=h12.x,
+                  nsweeps=10, verbose=FALSE)
+plot(p)
+
+@ 
+
+
+
+\end{document}
+
