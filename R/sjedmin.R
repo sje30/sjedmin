@@ -332,11 +332,14 @@ pipp2.lookup <- function(w=c(0, 1000, 0, 1000),
                          n1=100, n2 = 100,
                          h1, d1, h2, d2, h12, d12,
                          nsweeps=10,
+                         fix=0,
                          verbose = FALSE)
 {
   ## pipp: Pairwise Interaction Point Process
   ## Works using a lookup table idea.
 
+  ## FIX set to 0 (move all cells), 1 (fix type 1; move type 2)
+  ## or 2 (fix type 2, move type 1)
   npts <- n1 + n2
   ## If initial PTS are not provided, generate some at random.
   if (is.null(pts1))
@@ -362,6 +365,7 @@ pipp2.lookup <- function(w=c(0, 1000, 0, 1000),
             as.double(h12), as.double(d12), as.integer(length(d12)),
             as.integer(nsweeps),
             as.integer(verbose),
+            as.integer(fix),
             x = as.double(pts[,1]),
             y = as.double(pts[,2]),
             okay = integer(1),
