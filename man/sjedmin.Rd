@@ -83,6 +83,8 @@ d <- dminlulfix2(w = c( 100, 800, 400, 900),
                  lower=12, upper=-1, d12=d12, p2=p2)
 plot(d, r1=r1, r2=r2)
 
+## Bivariate simulation.
+plot(bdmin.bd(n1=50, n2=30, d1=50, d2=30, d12=80, nsweeps=20))
 }
 \author{Stephen Eglen}
 \keyword{spatial}
