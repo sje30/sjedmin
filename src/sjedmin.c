@@ -339,6 +339,13 @@ void dminlul(Sfloat *pwid, Sfloat *pht, int *pnumcells,
       nnd_n( xpts, ypts, i, x, y, &idx, &min);
       /*min = 1000; */
       if ( (min < this_dmin) ) {
+	/* || (min > upper)*/
+	/* Cannot test if the min distance is too big... this won't
+	 * work for early cells!  i.e. when putting the first cell in,
+	 * the upper distance will be the value returned by nnd_n,
+	 * ie.s. some huge number. * /
+
+	 
 	/* reject cell and try another. */
 	num_rejects++;
 	this_cell_rejects++;
