@@ -231,7 +231,8 @@ void dminsd(Sfloat *pwid, Sfloat *pht, int *pnumcells,
 
 void dminl(Sfloat *pwid, Sfloat *pht, int *pnumcells,
 	   Sfloat *pdmin, Sfloat *psd,
-	   Sfloat *xpts, Sfloat *ypts,
+	   int *quiet,
+	   Sfloat *xpts, Sfloat *ypts, 
 	   Sfloat *dmins, int *nrejects)
 
 {
@@ -293,9 +294,10 @@ void dminl(Sfloat *pwid, Sfloat *pht, int *pnumcells,
     xpts[i] = x; ypts[i] = y;
     nrejects[i] = this_cell_rejects;
   }
-  
-  Rprintf("#rejects %d\tdminl packing density %.3f\n", num_rejects,
-	 ((*pnumcells * PI * *pdmin * *pdmin)/(4 * *pwid * *pht)));
+
+  if(! *quiet) 
+    Rprintf("#rejects %d\tdminl packing density %.3f\n", num_rejects,
+	    ((*pnumcells * PI * *pdmin * *pdmin)/(4 * *pwid * *pht)));
 
   RANDOUT;
 }
@@ -304,7 +306,8 @@ void dminl(Sfloat *pwid, Sfloat *pht, int *pnumcells,
 void dminlul(Sfloat *pwid, Sfloat *pht, int *pnumcells,
 	     Sfloat *pdmin, Sfloat *psd,
 	     Sfloat *plower, Sfloat *pupper,
-	     Sfloat *xpts, Sfloat *ypts,
+	     int *quiet,
+	     Sfloat *xpts, Sfloat *ypts, 
 	     Sfloat *dmins, int *nrejects)
 
 {
@@ -382,9 +385,10 @@ void dminlul(Sfloat *pwid, Sfloat *pht, int *pnumcells,
     xpts[i] = x; ypts[i] = y;
     nrejects[i] = this_cell_rejects;
   }
-  
-  Rprintf("#rejects %d\tdminlul packing density %.3f\n", num_rejects,
-	 ((*pnumcells * PI * *pdmin * *pdmin)/( 4 * *pwid * *pht)));
+
+  if (!*quiet)
+    Rprintf("#rejects %d\tdminlul packing density %.3f\n", num_rejects,
+	    ((*pnumcells * PI * *pdmin * *pdmin)/( 4 * *pwid * *pht)));
 
   RANDOUT;
 }
