@@ -108,7 +108,7 @@ void h_amac(Sfloat *t, Sfloat *xd1, Sfloat *p, Sfloat *b, Sfloat *h)
 }
 
 
-void dminlulbd(Sfloat *wid, Sfloat *ht, int *numcells,
+void dminlulbd(Sfloat *pw, int *numcells,
 	       Sfloat *pdmin, Sfloat *psd,
 	       Sfloat *plower, Sfloat *pupper,
 	       Sfloat *xpts, Sfloat *ypts,
@@ -123,37 +123,43 @@ void dminlulbd(Sfloat *wid, Sfloat *ht, int *numcells,
   
   int i,j, mm, id, okay, generate_r;
   Sfloat x1, y1, dist2, u, r, rr, lower, upper;
+  Sfloat xmin, xmax, ymin, ymax, wid, ht;
   int n = *numcells;
 
   RANDIN;
-
+  xmin = pw[0]; xmax = pw[1]; ymin = pw[2]; ymax = pw[3];
+  wid = xmax - xmin; ht = ymax - ymin;
   lower = *plower; upper = *pupper;
 
   /* Create initial set of points. */
   for (i=0; i<n; i++) {
-    xpts[i] = UNIF * (*wid); ypts[i] = UNIF * (*ht);
+    xpts[i] = xmin + (UNIF * wid); ypts[i] = ymin + (UNIF * ht);
   }
 
   mm = 4 * n;			/* Number of repeats */
   mm *= 10;			/* if starting from Poisson distribution. */
   for (i=0; i<= mm; i++) {
     id = (int)(n*UNIF);	/* pick one point at random. */
-    /*if (i%100==0) Rprintf("it %d:select new point for unit %d\n", i,id);*/
+    if ( 0 && (i%100)==0)
+      Rprintf("it %d:select new point for unit %d\n", i,id);
     xpts[id] = xpts[0]; ypts[id] = ypts[0];
 
     do {
       
       /* generate a new point. */
-      xpts[0] = UNIF * (*wid); ypts[0] = UNIF * (*ht);
+      xpts[0] = xmin + (UNIF * wid); ypts[0] = ymin + (UNIF * ht);
+/*       Rprintf("generate new trial at %f %f\n", xpts[0], ypts[0]); */
       u = UNIF;
       okay = 1;
-
+      
       /* genereate a new dmin value. */
       generate_r = 1;
       while (generate_r) {
 	r = (*psd * norm_rand()) + *pdmin;
-	if ( (r > lower ) && (r < upper)) generate_r = 0; /* okay r value */
+	if ( (r > lower ) && ((upper <0) || (r < upper)))
+	  generate_r = 0; /* okay r value */
       }
+      /*Rprintf("choose %.3f\n", r);*/
       rr = r*r;
       for(j=1; j<n; j++) {
 	x1 = xpts[j] - xpts[0]; y1 = ypts[j] - ypts[0];
@@ -167,8 +173,6 @@ void dminlulbd(Sfloat *wid, Sfloat *ht, int *numcells,
 
     /* dmins and nrejects not returned here. */
     dmins[id] = r;		/* store r value. */
-/*     nrejects[i] = this_cell_rejects; */
-
   }
 
   RANDOUT;

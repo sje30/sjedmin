@@ -263,7 +263,7 @@ plot.sjedmin2 <- function(x, r1=12, r2=r1) {
           inch=FALSE, add=TRUE, bg="black")
 }
 
-dminlulbd <- function(wid = 1000, ht = 1000, npts = 200,
+dminlulbd <- function(w, npts = 200,
                     dmin = 20, dminsd = 2, lower = 0, upper = 100)
 {
   ## Birth and Death version of dminlul
@@ -272,8 +272,7 @@ dminlulbd <- function(wid = 1000, ht = 1000, npts = 200,
   trying <- TRUE
   while (trying && (attempt < dminmaxattempts)) {
     z <- .C("dminlulbd",
-            as.double(wid),
-            as.double(ht),
+            as.double(w),
             as.integer(npts),
             as.double(dmin),
             as.double(dminsd),
