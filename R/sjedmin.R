@@ -246,14 +246,14 @@ dminlul3d <- function(wid = 1000, ht = 1000, dep=1000, npts = 200,
 
 plot.sjedmin <- function(x) {
   ## Show the results of a dmin simulation.
-  plot(x$x, x$y, asp=1, main=x$note)
+  plot(x$x, x$y, asp=1, main=x$note, xlab='', ylab='')
 }
 
      
 plot.sjedmin2 <- function(x, r1=12, r2=r1) {
   ## Show the results of a dmin simulation.
   ## r1 is radius of cell 1; r2 is radius of cell 2.
-  plot(NA,
+  plot(NA, xlab='', ylab='',
        xlim=c(x$args$w[1], x$args$w[2]),
        ylim=c(x$args$w[3], x$args$w[4]),
        asp=1,main=x$note)
