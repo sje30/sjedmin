@@ -44,6 +44,10 @@ void nnd_3d(Sfloat *xs, Sfloat *ys, Sfloat *zs, int n,
 	    Sfloat a, Sfloat b, Sfloat c, int ignore,
 	    int *idx, Sfloat *min);
 
+void bdmin_check(Sfloat *xpts, Sfloat *ypts, int n1, int n2,
+		 int i, Sfloat d, Sfloat d12, int *okay, int *id);
+
+
      
 void pairwise_amac(Sfloat *wid, Sfloat *ht, int *numcells,
 		   Sfloat *xd1, Sfloat *p, Sfloat *b,
@@ -535,7 +539,7 @@ void bdmin_bd(Sfloat *pw, int *pn1, int *pn2,
    * *PVERBOSE is 1 => print verbose output.
    */
 
-  int num_rejects = 0, this_cell_rejects = 0;
+  int num_rejects = 0, this_cell_rejects;
   int looking, generate_dmin;
   int i, sweep, constraint, id;
   int n, n1, n2;
@@ -567,7 +571,7 @@ void bdmin_bd(Sfloat *pw, int *pn1, int *pn2,
   }
   wid = xmax - xmin; ht = ymax - ymin;
 
-  while( --sweep > 0) {
+  while( sweep-- > 0) {
     /*Perform one complete sweep, updating positions of cells.  */
     if (*pverbose) 
       Rprintf("sweep %d\n", sweep);
@@ -614,7 +618,12 @@ void bdmin_bd(Sfloat *pw, int *pn1, int *pn2,
 	  nrejects[1]++;
 	}
 	if (looking) {
-	  this_cell_rejects++;
+	  if (this_cell_rejects++ > 99999) {
+	    /* Taking far too long to replace one cell, so error. */
+	    nrejects[0]= -1;
+	    Rprintf("egg %d\n", this_cell_rejects);
+	    sweep = 0; looking=0; i=n; /* end all loops */
+	  }
 	}
       }
       if(0 && *pverbose) {
