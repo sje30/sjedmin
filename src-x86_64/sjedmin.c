@@ -10,6 +10,14 @@
  * typedef double Sfloat;
  */
 
+
+#define MAXREJECTS 999999
+/* This is the maximum number of cells that we can reject before
+ * abandoning this simulation.  (This is the total through the simulation,
+ * not the total per cell.)
+ */
+
+#define MAXDISTANCE 9999999	/* some large number used in nnd_n. */
 void h_amac(Sfloat *t, Sfloat *xd1, Sfloat *p, Sfloat *b, Sfloat *h);
 
 void nnd_n(Sfloat *xs, Sfloat *ys, int n, Sfloat a, Sfloat b,
@@ -27,6 +35,14 @@ void pairwise_amac(Sfloat *wid, Sfloat *ht, int *numcells,
    * Minimum distance between cells should be at least dmin.
    * On exit, we return an array of cells stored in (xs, ys).
    * NJRECTS stores the number of rejected cells.
+   */
+
+  /* This routine adapted from Brian Ripley's code for generating
+   * Strauss process, from his "spatial" library.  This code
+   * implements the pairwise amacrine function suggested by Diggle and
+   * Gratton(1984) for modelling amacrine distribution.  All the birth
+   * and death processes in this file follow the same structure as
+   * this.
    */
   
   int i,j, mm, id;
@@ -67,6 +83,19 @@ void pairwise_amac(Sfloat *wid, Sfloat *ht, int *numcells,
   }
 
   RANDOUT;
+}
+
+void h_amac(Sfloat *t, Sfloat *xd1, Sfloat *p, Sfloat *b, Sfloat *h)
+{
+  /* Pairwise interaction function for amacrines. This is a helper
+   * function for pairwise_amac, above. */
+  if (*t < *xd1)
+    *h = 0.0;
+  else if (*t <= *p)
+    *h = ( pow( ((*t-*xd1)/(*p-*xd1)), *b));
+  else
+    *h = 1.0;
+  /*printf("ret valu %lf\n", *h);*/
 }
 
 
@@ -135,23 +164,6 @@ void dminlulbd(Sfloat *wid, Sfloat *ht, int *numcells,
 
   RANDOUT;
 }
-
-/* Is this accessible from R? */
-void h_amac(Sfloat *t, Sfloat *xd1, Sfloat *p, Sfloat *b, Sfloat *h)
-{
-  /* Pairwise interaction function for amacrines. */
-  if (*t < *xd1)
-    *h = 0.0;
-  else if (*t <= *p)
-    *h = ( pow( ((*t-*xd1)/(*p-*xd1)), *b));
-  else
-    *h = 1.0;
-  /*printf("ret valu %lf\n", *h);*/
-}
-
-
-
-#define MAXREJECTS 999999
 
 void dminsd(Sfloat *pwid, Sfloat *pht, int *pnumcells,
 	    Sfloat *pdmin, Sfloat *psd,
@@ -400,7 +412,6 @@ void dminacc(Sfloat *pwid, Sfloat *pht, int *pnumcells,
   Sfloat p, plow, phigh;
 
   RANDIN;
-  /* Just an esitmate since we don't know the actual dmin values */
 
   for (i=0; i<*pnumcells; i++) {
 
@@ -504,7 +515,12 @@ void nnd_n(Sfloat *xs, Sfloat *ys, int n, Sfloat a, Sfloat b,
    * The N datapoints are stored in XS[] and YS[].
    */
   if (n==0) {
-    *idx = -1; *min = 9999999;
+    *idx = -1; *min = MAXDISTANCE;
+
+    /* If n=0, no other cells have yet been positioned, so there is no
+     * nearest neighbour. Hence, we just return some large distance to
+     * indicate that fact. May be better to check that idx is less than zero,
+     * since MAXDISTANCE may sometime be exceeded. */
   } else {
     nnd(xs, ys, n, a, b, -1, idx, min);
   }
@@ -519,7 +535,9 @@ void nnd(Sfloat *xs, Sfloat *ys, int n, Sfloat a, Sfloat b, int ignore,
    * the closest cell.
    */
   int i;
-  int index = -1; Sfloat minv = 99999999;
+  int index = -1; Sfloat min_dist = 0;
+
+  int first = 1;		/* check for 1st distance comparison. */
 
   Sfloat x, y, dx, dy, dist;
   
@@ -531,14 +549,15 @@ void nnd(Sfloat *xs, Sfloat *ys, int n, Sfloat a, Sfloat b, int ignore,
     x = xs[i]; y = ys[i];
     dx = x - a; dy = y - b;
     dist = (dx*dx) + (dy*dy);
-    if ( dist < minv) {
+    if ( first || (dist < min_dist)) {
+      first = 0;
       index = i;
-      minv = dist;
+      min_dist = dist;
     }
     
   }
 
-  *min = sqrt(minv);
+  *min = sqrt(min_dist);
   *idx = index;
 }
   
