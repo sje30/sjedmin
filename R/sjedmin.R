@@ -273,7 +273,7 @@ pipp.lookup <- function(w=c(0, 1000, 0, 1000),
                  n1=100,
                  h, d, 
                  nsweeps=10,
-                 verbose = FALSE)
+                 verbose = FALSE, tor=FALSE)
 {
   ## pipp: Pairwise Interaction Point Process
   ## Works using a lookup table idea.
@@ -298,6 +298,7 @@ pipp.lookup <- function(w=c(0, 1000, 0, 1000),
             as.integer(length(d)),
             as.integer(nsweeps),
             as.integer(verbose),
+            as.integer(tor),
             x = as.double(pts[,1]),
             y = as.double(pts[,2]),
             okay = integer(1),
@@ -333,7 +334,7 @@ pipp2.lookup <- function(w=c(0, 1000, 0, 1000),
                          h1, d1, h2, d2, h12, d12,
                          nsweeps=10,
                          fix=0,
-                         verbose = FALSE)
+                         verbose = FALSE, tor=FALSE)
 {
   ## pipp: Pairwise Interaction Point Process
   ## Works using a lookup table idea.
@@ -366,6 +367,7 @@ pipp2.lookup <- function(w=c(0, 1000, 0, 1000),
             as.integer(nsweeps),
             as.integer(verbose),
             as.integer(fix),
+            as.integer(tor),
             x = as.double(pts[,1]),
             y = as.double(pts[,2]),
             okay = integer(1),
