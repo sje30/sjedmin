@@ -340,7 +340,7 @@ void dminlul(Sfloat *pwid, Sfloat *pht, int *pnumcells,
       while (generate_dmin) {
 	this_dmin = *pdmin + (*psd * norm_rand());
 	if ( (this_dmin > lower) &&
-	     ( (upper < 0) || (this_dmin < upper)) )
+	     ((upper <0) || (this_dmin < upper)))
 	  generate_dmin = 0;
 	/*else printf("dminlul: dmin %f outside range\n", this_dmin);*/
       }
@@ -383,7 +383,7 @@ void dminlul(Sfloat *pwid, Sfloat *pht, int *pnumcells,
     nrejects[i] = this_cell_rejects;
   }
   
-  Rprintf("#rejects %d\tdminl packing density %.3f\n", num_rejects,
+  Rprintf("#rejects %d\tdminlul packing density %.3f\n", num_rejects,
 	 ((*pnumcells * PI * *pdmin * *pdmin)/( 4 * *pwid * *pht)));
 
   RANDOUT;
