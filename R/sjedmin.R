@@ -1,8 +1,8 @@
-## Do the dmin routine.
-##
-## Load with source("/home/stephen/langs/R/c-code/dminsd.r")
+## Dmin routines.
+## Stephen Eglen
 
-dminmaxattempts <- 20                    #number of attempts before giving up.
+
+dminmaxattempts <- 5                    #number of attempts before giving up.
 
 dminsd <- function(wid = 1000, ht = 1000, npts = 200,
                    dmin = 20, dminsd = 2)
@@ -197,7 +197,7 @@ dminlulfix2 <- function(w,
 }
 
 bdmin.bd <- function(w=c(0, 1000, 0, 1000),
-                     pts=matrix( runif((n1+n2)*2) * 1000, nrow=n1+n2, ncol=2),
+                     pts,
                      n1=100, n2=100,
                      d1=20, d1.sd=2,
                      d2=20, d2.sd=2,
@@ -208,6 +208,14 @@ bdmin.bd <- function(w=c(0, 1000, 0, 1000),
 {
   ## Bivariate dmin simulation, with birth&death algorithm.
 
+  npts <- n1+n2
+
+  ## If initial PTS are not provided, generate some at random.
+  if (missing(pts))
+    pts <- cbind(w[1] +  (runif(npts) * (w[2] - w[1])),
+                 w[3] + (runif(npts) * (w[4] - w[3])))
+  
+  ## Could include a check that pts are within window.
   params <- c(d1, d1.sd, d2, d2.sd, d12, lower, upper)
   attempt <- 1
   okay <- TRUE
@@ -224,15 +232,15 @@ bdmin.bd <- function(w=c(0, 1000, 0, 1000),
             y = as.double(pts[,2]),
             nrejects = integer(2),
             PACKAGE="sjedmin")
-    if (z$x[1] > 0)
+    if (z$nrejects[1] >= 0)
       trying <- FALSE
     else
       attempt <- attempt + 1
   }
   if (attempt >= dminmaxattempts) {
-    cat(paste ("bdmin: ", dmin, dminsd, "fail after",
+    cat(paste ("bdmin: ", paste(params, collapse=' '), "fail after",
                 dminmaxattempts, "tries\n"))
-    ## just make a random distribution instead of a nice mosaic.
+    ## just make a random distribution
     z$x <- w[1] +  (runif(npts) * (w[2] - w[1]))
     z$y <- w[3] + (runif(npts) * (w[4] - w[3]))
     okay <- FALSE
@@ -245,15 +253,18 @@ bdmin.bd <- function(w=c(0, 1000, 0, 1000),
               nrejects = z$nrejects, okay = okay,
               ##args=match.call(),
               args=list(w=w, params=params),
-              attempts = attempt, note = note)
+              attempts = attempt, note = note, w=w)
   class(res) <- "sjebdmin"
   res
 }
 
 plot.sjebdmin <- function(x) {
+  ## Plotting function for output from bdmin.bd.
   plot(x$x, x$y, asp=1, pch=19,
-       main=title(paste("bdmin", paste(b$args$params, collapse='  '))),
+       main=title(paste("bdmin", paste(x$args$params, collapse='  '),
+         ifelse(x$okay, "OK", "!OK")         )),
        col= c( rep("green", x$n1), rep("orangered", x$n2)))
+  rect( x$w[1], x$w[3], x$w[2], x$w[4], lty=2)
 }
 
 dminlul3d <- function(wid = 1000, ht = 1000, dep=1000, npts = 200,
