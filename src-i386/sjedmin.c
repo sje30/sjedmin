@@ -523,7 +523,7 @@ void dminlulfix2(Sfloat *pw, int *pnumcells,
 
 void bdmin_bd(Sfloat *pw, int *pn1, int *pn2,
 	      Sfloat *params,
-	      int *pnsweeps, int *pquiet,
+	      int *pnsweeps, int *pverbose,
 	      Sfloat *xpts, Sfloat *ypts, 
 	      int *nrejects)
 {
@@ -532,6 +532,7 @@ void bdmin_bd(Sfloat *pw, int *pn1, int *pn2,
    * N1 is number of type 1 cells, N2 number of type 2 cells.
    * PARAMS is a vector storing the parameters for the exclusion zones.
    * NSWEEPS is the number of sweeps to perform.
+   * *PVERBOSE is 1 => print verbose output.
    */
 
   int num_rejects = 0, this_cell_rejects = 0;
@@ -558,7 +559,7 @@ void bdmin_bd(Sfloat *pw, int *pn1, int *pn2,
   n1 = *pn1; n2 = *pn2; n = n1 + n2;
   
   xmin = pw[0]; xmax = pw[1]; ymin = pw[2]; ymax = pw[3];
-  if (!*pquiet) {
+  if (0 && *pverbose) {
     Rprintf("field %f %f %f %f\n", xmin, xmax, ymin, ymax);
     Rprintf("n1 %d n2 %d\n", n1, n2);
     Rprintf("d1 %f +/- %f d2 %f +/- %f d12 %f\n",
@@ -568,7 +569,7 @@ void bdmin_bd(Sfloat *pw, int *pn1, int *pn2,
 
   while( --sweep > 0) {
     /*Perform one complete sweep, updating positions of cells.  */
-    if (!*pquiet) 
+    if (*pverbose) 
       Rprintf("sweep %d\n", sweep);
 
     for (i=0; i<n; i++) {
@@ -599,7 +600,7 @@ void bdmin_bd(Sfloat *pw, int *pn1, int *pn2,
 	bdmin_check(xpts, ypts, n1, n2, i,
 		    this_dmin, d12, &constraint, &id);
 
-	if (*pquiet) 
+	if (*pverbose) 
 	  Rprintf("cell %d pos %f %f constraint %d id %d\n",
 		  i, x, y, constraint, id);
 	if (constraint == 0) {
@@ -616,13 +617,13 @@ void bdmin_bd(Sfloat *pw, int *pn1, int *pn2,
 	  this_cell_rejects++;
 	}
       }
-      if(*pquiet) {
+      if(0 && *pverbose) {
 	Rprintf("cell %d rejects %d\n", i, this_cell_rejects);
       }
     } /* next cell */
   } /* next sweep */
 
-  if (!*pquiet) {
+  if (*pverbose) {
     Rprintf("#rejects: %d %d\n", nrejects[0], nrejects[1]);
   }
   RANDOUT;

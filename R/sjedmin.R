@@ -204,7 +204,7 @@ bdmin.bd <- function(w=c(0, 1000, 0, 1000),
                      d12=12,
                      lower = 0, upper = -1,
                      nsweeps=10,
-                     quiet = FALSE)
+                     verbose = FALSE)
 {
   ## Bivariate dmin simulation, with birth&death algorithm.
 
@@ -218,7 +218,7 @@ bdmin.bd <- function(w=c(0, 1000, 0, 1000),
             as.integer(n1), as.integer(n2),
             as.double(params),
             as.integer(nsweeps),
-            as.integer(quiet),
+            as.integer(verbose),
             ## create memory to store return values.
             x = as.double(pts[,1]),
             y = as.double(pts[,2]),
