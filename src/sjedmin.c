@@ -218,9 +218,9 @@ void dminsd(Sfloat *pwid, Sfloat *pht, int *pnumcells,
 
 
 void dminl(Sfloat *pwid, Sfloat *pht, int *pnumcells,
-	    Sfloat *pdmin, Sfloat *psd,
-	    Sfloat *xpts, Sfloat *ypts,
-	    Sfloat *dmins, int *nrejects)
+	   Sfloat *pdmin, Sfloat *psd,
+	   Sfloat *xpts, Sfloat *ypts,
+	   Sfloat *dmins, int *nrejects)
 
 {
   /* Create NUMCELLS cells distributed in an area of size wid*ht.
@@ -239,7 +239,7 @@ void dminl(Sfloat *pwid, Sfloat *pht, int *pnumcells,
   Sfloat min; int idx;
   Sfloat this_dmin;
 
-  Sfloat min_dmin = 10;
+  Sfloat min_dmin = 0;		/* Just constrain dmin to be >0 */
 
   RANDIN;
   /* Just an esitmate since we don't know the actual dmin values */
@@ -256,7 +256,7 @@ void dminl(Sfloat *pwid, Sfloat *pht, int *pnumcells,
       x = UNIF * (*pwid); y = UNIF * (*pht);
       
       nnd_n( xpts, ypts, i, x, y, &idx, &min);
-      /*min = 1000; */
+
       if ( min < this_dmin) {
 	/* reject cell and try another. */
 	num_rejects++;
@@ -314,7 +314,7 @@ void dminlul(Sfloat *pwid, Sfloat *pht, int *pnumcells,
   Sfloat this_dmin;
   Sfloat lower, upper;
 
-  Sfloat min_dmin = 10;
+
 
   RANDIN;
 
@@ -331,7 +331,7 @@ void dminlul(Sfloat *pwid, Sfloat *pht, int *pnumcells,
 	  generate_dmin = 0;
 	/*else printf("dminlul: dmin %f outside range\n", this_dmin);*/
       }
-      if (this_dmin < min_dmin) this_dmin = min_dmin;
+
       /*Rprintf("this val %lf\n", this_dmin); */
 
       x = UNIF * (*pwid); y = UNIF * (*pht);
