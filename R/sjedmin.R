@@ -94,7 +94,7 @@ dminl <- function(wid = 1000, ht = 1000, npts = 200,
 
 dminlul <- function(w, npts = 200,
                     dmin = 20, dminsd = 2, lower = 0, upper = 100,
-                    quiet = FALSE)
+                    quiet = TRUE)
 {
   ## Lower and upper bound version of Lucia's dmin.
   ## Safety check since a lot of code uses dminlul.
@@ -126,8 +126,8 @@ dminlul <- function(w, npts = 200,
     cat(paste ("dminlul: ", dmin, dminsd, "fail after",
                 dminmaxattempts, "tries\n"))
     ## just make a random distribution instead of a nice mosaic.
-    z$x <- (runif(npts) * wid)
-    z$y <- (runif(npts) * ht)
+    z$x <- (runif(npts) * 1)
+    z$y <- (runif(npts) * 1)
     okay <- FALSE
   }
 
@@ -144,7 +144,7 @@ dminlul <- function(w, npts = 200,
 dminlulfix2 <- function(w,
                         npts = 200,
                         dmin = 20, dminsd = 2, lower = 0, upper = 100,
-                        quiet = FALSE,
+                        quiet = TRUE,
                         p2=matrix( c(100, 100, 200, 400), nrow=2),
                         d12=10)
 {
