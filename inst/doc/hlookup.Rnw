@@ -1,10 +1,10 @@
 % -*- mode: noweb; noweb-default-code-mode: R-mode; -*-
 \documentclass[12pt]{article}
 
-%%\VignetteIndexEntry{How to use look up tables for h() functions}
-%%\VignetteDepends{sjedmin, spatstat}
-%%\VignetteKeywords{h functions}
-%%\VignettePackage{sjedmin}
+%\VignetteIndexEntry{How to use look up tables for h() functions}
+%\VignetteDepends{sjedmin, spatstat}
+%\VignetteKeywords{h functions}
+%\VignettePackage{sjedmin}
 
 \SweaveOpts{echo=T,pdf=T,eps=F,eval=T}
 
