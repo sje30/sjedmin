@@ -197,7 +197,7 @@ dminlulfix2 <- function(w,
 }
 
 bdmin.bd <- function(w=c(0, 1000, 0, 1000),
-                     pts,
+                     pts=NULL,
                      n1=100, n2=100,
                      d1=20, d1.sd=2,
                      d2=20, d2.sd=2,
@@ -211,7 +211,7 @@ bdmin.bd <- function(w=c(0, 1000, 0, 1000),
   npts <- n1+n2
 
   ## If initial PTS are not provided, generate some at random.
-  if (missing(pts))
+  if (is.null(pts))
     pts <- cbind(w[1] +  (runif(npts) * (w[2] - w[1])),
                  w[3] + (runif(npts) * (w[4] - w[3])))
   
@@ -267,6 +267,76 @@ plot.sjebdmin <- function(x) {
   rect( x$w[1], x$w[3], x$w[2], x$w[4], lty=2)
 }
 
+
+pipp.lookup <- function(w=c(0, 1000, 0, 1000),
+                 pts=NULL,
+                 n1=100,
+                 h, d, 
+                 nsweeps=10,
+                 verbose = FALSE)
+{
+  ## pipp: Pairwise Interaction Point Process
+  ## Works using a lookup table idea.
+
+  npts <- n1
+  ## If initial PTS are not provided, generate some at random.
+  if (is.null(pts))
+    pts <- cbind(w[1] +  (runif(npts) * (w[2] - w[1])),
+                 w[3] + (runif(npts) * (w[4] - w[3])))
+  
+  ## Could include a check that pts are within window.
+
+  attempt <- 1
+  okay <- TRUE
+  trying <- TRUE
+  while (trying && (attempt < dminmaxattempts)) {
+    z <- .C("pipp_lookup",
+            as.double(w),
+            as.integer(n1),
+            as.double(h),
+            as.double(d),
+            as.integer(length(d)),
+            as.integer(nsweeps),
+            as.integer(verbose),
+            x = as.double(pts[,1]),
+            y = as.double(pts[,2]),
+            okay = integer(1),
+            PACKAGE="sjedmin")
+    if (z$okay > 0)
+      trying <- FALSE
+    else
+      attempt <- attempt + 1
+  }
+  if (attempt >= dminmaxattempts) {
+    cat(paste ("pipp.lookup fail after", 
+                dminmaxattempts, "tries\n"))
+    ## just make a random distribution
+    z$x <- w[1] +  (runif(npts) * (w[2] - w[1]))
+    z$y <- w[3] + (runif(npts) * (w[4] - w[3]))
+    okay <- FALSE
+  }
+
+  ## Make up the return list.
+  note <- paste("pipp.lookup")
+  res <- list(x = z$x, y = z$y, 
+              okay = okay,
+              ##args=match.call(),
+              args=list(w=w, h=h, d=d),
+              attempts = attempt, note = note, w=w)
+  class(res) <- "pipp.lookup"
+  res
+}
+
+hlookup <- function(h, d, r) {
+  z <- .C("hlookup", as.double(h), as.double(d),
+          as.integer(length(h)),
+          as.double(r),
+          ## return value.
+          res=double(1),
+          PACKAGE="sjedmin")
+  z$res
+}
+                    
 dminlul3d <- function(wid = 1000, ht = 1000, dep=1000, npts = 200,
                       dmin = 20, dminsd = 2, lower = 0, upper = 100,
                       quiet = FALSE)
