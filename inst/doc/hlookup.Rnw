@@ -22,10 +22,18 @@ form}
 
 \maketitle
 
-
-(This document is created from the R source file, hlookup.Rnw which is
-found in the extras subdirectory of the sjedmin package.)
-
+\begin{abstract}
+  This document describes functions in the R package \textit{sjedmin}
+  for simulating univariate and bivariate spatial patterns using h()
+  functions that have been specified as look up tables (LUTs).
+  Specifying h() as a LUT rather than in a functional form has the
+  advantage that it is easy to write the h() function in R and then do
+  the simulation of patterns in C.  It also allows you to use the
+  non-parametric estimators of h() from \textit{spatstat} package
+  directly.  (This document is created from the Rnw source file,
+  hlookup.Rnw, which is found in the extras subdirectory of the
+  sjedmin package.)
+\end{abstract}
 
 \section{The h function}
 
@@ -34,17 +42,16 @@ invisible(.libPaths( Sys.getenv("MYRLIB")))
 library(sjedmin)
 @ 
 
-The h function can be used in a pairwise interactiona point process
+The h function can be used in a pairwise interaction point process
 (PIPP) model to specify interactions between pairs of cells.  The h
-function can be given in a program either as a function, with
-parameters controlloing its shape, or as a lookup table (LUT).  The
-advantage of a LUT is that gives us a lot of freedom in deciding what
-kinds of h() functions we want to use when simulating spatial point
-patterns.
+function can be given either as a function, with parameters
+controlling its shape, or as a lookup table (LUT).  The advantage of a
+LUT is that gives us a lot of freedom in deciding what kinds of h()
+functions we want to use when simulating spatial point patterns.
 
 By a LUT I simply mean a table where for certain distances, $d$, we
 provide the corresponding value of $h(d)$, e.g. here is a LUT for a
-simple step function around the point $d=10$:
+simple step function around the point $d=20$:
 
 <<echo=T>>=
 h <- function(d) {
@@ -58,18 +65,19 @@ print(lut1 <- rbind(d, h1))
 @
 
 So, in this LUT, if we want to find the value of h() when d=24, we
-just lookup the corresponding value in the LUT.  
-
-In my code, linear interpolation between entries is used, which can be
-a little confusing, especially in the case of a step function:
+just lookup the corresponding value in the LUT.  In my code, linear
+interpolation between entries is used, which can be a little
+confusing, especially in the case of a step function:
 
 <<echo=T>>=
-hlookup(d, h1, 21)
+hlookup(h1, d, 21)
 @
-
+Here it thinks $h(21)=0.5$, since it has interpolated linearly between
+the LUT entries at  20 and 22.  (In this case, to mimic a step
+function, it would be better to use d values at 19.99 and 20.01).
 
 Here is a more natural example, using the h() parameterisation
-suggeted by Peter recently.
+suggested by Peter recently.
 
 <<fig=TRUE>>=
 hpar <- function(d,theta) {
@@ -94,11 +102,11 @@ points(x.lut, y.lut, pch=19, col='red')
 lines(x, sapply(x, function(d) {hlookup(y.lut, x.lut, d)}), col='red')
 @ 
 
-Here, the black curve is the true h() function from the parameteric h
-function; the red circles are the entries from the LUT (x.lut,
-y.lut).  The hlookup() routine linearly interpolates between these LUT
-entries to produce a close approximatition to the real function.  (So
-close, that hopefully the underlying black curve may not be visible.)
+Here, the black curve is the true h() function from the parametric h
+function; the red circles are the entries from the LUT (x.lut, y.lut).
+The hlookup() routine linearly interpolates between these LUT entries
+to produce a close approximation to the real function.  (So close that
+hopefully the underlying black curve is mostly covered by the red line.)
 
 
 The hlookup() function makes several assumptions about the LUT:
@@ -107,14 +115,17 @@ The hlookup() function makes several assumptions about the LUT:
 \item Below the first entry in the LUT, it is assumed that h(d)=0.
 \item After the last entry in the LUT, it is assumed that h(d)=1.
 \end{enumerate}
+
 These last two points can be seen in the example above, since x.lut
-is only in the range [30,160].
+is only in the range [30,160].  Note also that the d values do not
+need to be equally-spaced along the x axis, they simply need to be
+monotically increasing.
 
 
 
 \section{Simulating univariate spatial patterns}
 
-The routine pipp\_lookup() will take an h() function in the form of a
+The routine pipp.lookup() will take an h() function in the form of a
 LUT and simulate a pattern according to that h function.  Here is an
 example, using the previous LUT:
 
@@ -158,7 +169,7 @@ The arguments to pipp.lookup are:
 
 Note that we can also use the spatstat library to compute a non
 parametric estimate of h() and then directly simulate from that
-estimate.  We use the spatstat library to compute an estimate of h()
+estimate.  Here we use the spatstat library to compute an estimate of h()
 for the on amacrine cells, and then simulate them.
 
 <<>>=
@@ -190,16 +201,17 @@ p <- pipp.lookup(n1=amac.on$n, pts=NULL,
 par(mfrow=c(2,2))
 plot(amac.on)
 plot(x, h, main='non par estimate of h() for amac.on', type='l')
-plot(p, main='sim ofamac.on from pipp.lookup',asp=1)
+plot(p, main='sim of amac.on from pipp.lookup',asp=1)
 @ 
 
 
 \section{Simulating bivariate spatial patterns}
 
 A second routine, pipp2.lookup, allows us to provide three LUTs for
-simulating bivariate patterns: $h_{11}$ for interactions between type 1
-cells, $h_{22}$ for type 2 cells and $h_{12}$ for interactions between tht
-two types of cells.  An example:
+simulating bivariate patterns: $h_{11}$ for interactions between type
+1 cells, $h_{22}$ for type 2 cells and $h_{12}$ for interactions
+between the two types of cells.  The arguments to pipp2.lookup are
+similar to those for pipp.lookupm, as the following example demonstrates:
 
 <<fig=TRUE,width=8>>=
 w <- c(0, 1000, 0, 1000)
@@ -217,7 +229,7 @@ par(mfrow=c(1,2))
 plot(h11.x, h11.y, type='l', col='green')
 lines(h22.x, h22.y, col='orangered')
 lines(h12.x, h12.y, col='black')
-legend(0, 1, c(expression(h[11]), expression(h[22]), expression(h[12])),
+legend(100, .2, c(expression(h[11]), expression(h[22]), expression(h[12])),
        text.col= c("green", "red", "black"))
 
 
