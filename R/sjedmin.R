@@ -92,18 +92,20 @@ dminl <- function(wid = 1000, ht = 1000, npts = 200,
 }
 
 
-dminlul <- function(wid = 1000, ht = 1000, npts = 200,
+dminlul <- function(w, npts = 200,
                     dmin = 20, dminsd = 2, lower = 0, upper = 100,
                     quiet = FALSE)
 {
   ## Lower and upper bound version of Lucia's dmin.
+  ## Safety check since a lot of code uses dminlul.
+  if( length(w) != 4)
+    stop(paste("w (", paste(w, collapse=' '), ") should be of length 4."))
   attempt <- 1
   okay <- TRUE
   trying <- TRUE
   while (trying && (attempt < dminmaxattempts)) {
     z <- .C("dminlul",
-            as.double(wid),
-            as.double(ht),
+            as.double(w),
             as.integer(npts),
             as.double(dmin),
             as.double(dminsd),
