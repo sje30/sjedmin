@@ -355,7 +355,7 @@ void dminlul(Sfloat *pwid, Sfloat *pht, int *pnumcells,
 	/* Cannot test if the min distance is too big... this won't
 	 * work for early cells!  i.e. when putting the first cell in,
 	 * the upper distance will be the value returned by nnd_n,
-	 * ie.s. some huge number. * /
+	 * ie.s. some huge number. */
 
 	 
 	/* reject cell and try another. */
@@ -404,7 +404,7 @@ void dminacc(Sfloat *pwid, Sfloat *pht, int *pnumcells,
    */
   
 
-  int num_rejects = 0, this_cell_rejects = 0;
+  int this_cell_rejects = 0;
   int looking;
   int i, dlow, dhigh;
   Sfloat x,y;
@@ -453,11 +453,11 @@ void dminacc_bd(Sfloat *wid, Sfloat *ht, int *pnumcells,
   /* Birth and death version of the dminacc function.
    */
 
-  int num_rejects = 0, this_cell_rejects = 0;
+  int this_cell_rejects = 0;
   int looking;
   int i, dlow, dhigh;
   int n, mm, id;
-  Sfloat x,y, u;
+  Sfloat u;
   Sfloat min; int idx;
   Sfloat p, plow, phigh;
 
@@ -525,6 +525,21 @@ void nnd_n(Sfloat *xs, Sfloat *ys, int n, Sfloat a, Sfloat b,
     nnd(xs, ys, n, a, b, -1, idx, min);
   }
 }
+
+void sjenndp(Sfloat *xs, Sfloat *ys, int *n,
+	     Sfloat *a, Sfloat *b, int *ignore,
+	     int *idx, Sfloat *min)
+{
+  /* Simple wrapper to call nnd from R -- make sure everything is a pointer. */
+  /*Rprintf("point %f %f\n", *a, *b);*/
+  nnd(xs, ys, *n,
+      *a,  *b,
+      *ignore,
+      idx, min);
+  /*Rprintf("closest id %d distance %f\n", *idx, *min);*/
+
+}
+
 
 void nnd(Sfloat *xs, Sfloat *ys, int n, Sfloat a, Sfloat b, int ignore,
 	int *idx, Sfloat *min)
