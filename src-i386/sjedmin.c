@@ -905,7 +905,7 @@ void pipp2_lookup(Sfloat *pw, int *pn1, int *pn2,
 		  Sfloat *ph1, Sfloat *pd1, int *hlen1,
 		  Sfloat *ph2, Sfloat *pd2, int *hlen2,
 		  Sfloat *ph12, Sfloat *pd12, int *hlen12,
-		  int *pnsweeps, int *pverbose,
+		  int *pnsweeps, int *pverbose, int *pfix,
 		  Sfloat *xpts, Sfloat *ypts, int *okay)
 {
   /* PIPP2: Bivariate Pairwise interaction point processes.
@@ -928,16 +928,31 @@ void pipp2_lookup(Sfloat *pw, int *pn1, int *pn2,
   Sfloat lower, upper;
   Sfloat *h_homo, *d_homo;
   int *len_homo;
-
+  int i_lo, i_hi;
+  
   Sfloat xmin, xmax, ymin, ymax, wid, ht;
   RANDIN;
 
+    
   sweep = *pnsweeps;
   n1 = *pn1; n2 = *pn2; n = n1+ n2;
   xmin = pw[0]; xmax = pw[1]; ymin = pw[2]; ymax = pw[3];
+
+  switch(*pfix) {
+  case 1: 			/* fix type 1 cells, just move type 2. */
+    i_lo=n1; i_hi=n; break;	/* fix type 2 cells, just move type 1.  */
+  case 2:
+    i_lo=0; i_hi = n1; break;
+  default: /* includes zero */
+    i_lo=0; i_hi=n; break;
+    /*Rprintf("In trouble, should not get here!");*/
+  }
+
+
   if (1 && *pverbose) {
     Rprintf("field %f %f %f %f\n", xmin, xmax, ymin, ymax);
     Rprintf("npts %d (%d type 1; %d type 2)\n", n, n1, n2);
+    Rprintf("fix %d lo %d hi %d\n", *pfix, i_lo, i_hi);
     Rprintf("LUT h1 has %d entries in range (%f, %f) to (%f, %f)\n",
 	    *hlen1, pd1[0], ph1[0], pd1[(*hlen1)-1], ph1[(*hlen1)-1]);
     Rprintf("LUT h2 has %d entries in range (%f, %f) to (%f, %f)\n",
@@ -953,7 +968,7 @@ void pipp2_lookup(Sfloat *pw, int *pn1, int *pn2,
     if (*pverbose) 
       Rprintf("sweep %d\n", sweep);
 
-    for (i=0; i<n; i++) {
+    for (i=i_lo; i< i_hi; i++) {
 
       /* move cell i. */
 
@@ -998,7 +1013,7 @@ void pipp2_lookup(Sfloat *pw, int *pn1, int *pn2,
 	    /* Taking far too long to replace one cell, so error. */
 	    Rprintf("pipp_d: trouble converging %d\n", this_cell_rejects);
 	    *okay = 0;
-	    sweep = 0; looking=0; i=n; /* end all loops */
+	    sweep = 0; looking=0; i=i_hi; /* end all loops */
 	  }
 	}
       }
