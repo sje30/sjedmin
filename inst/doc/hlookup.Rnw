@@ -1,8 +1,11 @@
 % -*- mode: noweb; noweb-default-code-mode: R-mode; -*-
 \documentclass[12pt]{article}
 
-%% Option pdf=F inhibits and pdf files being made.  Don't see the point
-%% here, since LaTeX includes just the .eps file.
+%%\VignetteIndexEntry{How to use look up tables for h() functions}
+%%\VignetteDepends{sjedmin, spatstat}
+%%\VignetteKeywords{h functions}
+%%\VignettePackage{sjedmin}
+
 \SweaveOpts{echo=T,pdf=F,eval=T}
 
 %% By including Sweave.sty myself, I can then override fonts loaded by that
@@ -270,6 +273,125 @@ plot(p)
 @ 
 
 
+\section{Toroidal conditions for hlookup}
+
+The univariate function hlookup includes a flag for toroidal boundary
+conditions.  Here is an example, both without and with toroidal
+conditions.  To check that the toroidal conditions are working, in the
+plot below the original data set is inside the dashed rectangle;
+copies of the dataset are wrapped around outside, just to check.
+
+
+In this example, I use a simple inhibition for h(), such that all
+points closer than 70 units are rejected.
+
+\setkeys{Gin}{width=1.0\textwidth}
+<<fig=TRUE>>=
+w <- c(200, 1500, 300, 1000)
+npts <- 100
+
+
+x.lut <- seq(from=30, to=160, by=10)
+y.lut <- ifelse(x.lut > 70, 1, 0)
+
+##plot(x.lut, y.lut, pch=19, col='red', type='p')
+##lines(x, sapply(x, function(d) {hlookup(y.lut, x.lut, d)}), col='red')
+
+par(mfrow=c(2,1), mar=c(3,2,3,1))
+for (tor in c(FALSE, TRUE)) {
+  p <- pipp.lookup(w=w, n1=npts, pts=NULL,
+                   h=y.lut, d=x.lut, nsweeps=10, verbose=F, tor=tor)
+
+  x0 <- p$x; y0 <- p$y
+  wid <- w[2] - w[1]
+  ht <- w[4] - w[3]
+  all <- rbind(cbind(x0-wid, y0+ht),
+               cbind(x0,     y0+ht),
+               cbind(x0+wid, y0+ht),
+               cbind(x0-wid, y0),
+               cbind(x0,     y0),
+               cbind(x0+wid, y0),
+               cbind(x0-wid, y0-ht),
+               cbind(x0,     y0-ht),
+               cbind(x0+wid, y0-ht)
+               )
+  
+  dw <- wid * .2
+  dh <- ht * .2
+  plot(all, xlim=c(w[1] - dw, w[2] + dw), ylim=c(w[3] - dh, w[4] + dh),
+       pch=19, cex=0.4, asp=1)
+  title(main=paste("tor ", tor))
+  rect(w[1], w[3], w[2], w[4], lty=2)
+  
+}
+par(mfrow=c(1,1))
+@ 
+
+
+
+In the following, here are bivariate simulations, in each case the
+homotypic constraint is a hard exclusion (at 100 um), and there is a
+heterotypic constrain set around $60 \pm 2$ um.  When tor is FALSE,
+you should be able to see border cells that have cells outside the
+rectangle breaking the constraint.  This does not happen when tor is TRUE.
+
+<<>>=
+
+
+r1 <- r2 <- 100                         #diameter of exclusion zones.
+
+example.tor2 <- function(tor) {
+  w <- c(0, 1000, 200, 1500)
+  n1 <- n2 <- 75
+  h11.x <- seq(from=0, to=150, by=10)
+  h11.y <- ifelse(h11.x>r1, 1, 0)
+  
+  h22.x <- seq(from=0, to=150, by=10)
+  h22.y <- ifelse(h22.x>r2, 1, 0)
+  
+  h12.x <- seq(from=0, to=60, by=2)
+  h12.y <- pnorm(h12.x, mean=40, sd=1)
+  
+  p <- pipp2.lookup(w=w, pts1=NULL, pts2=NULL, n1=n1, n2=n2,
+                    h1=h11.y, d1=h11.x,
+                    h2=h22.y, d2=h22.x,
+                    h12=h12.y, d12=h12.x,
+                    nsweeps=10, verbose=FALSE,tor=tor)
+  x0 <- p$x; y0 <- p$y
+  wid <- w[2] - w[1]; ht <- w[4] - w[3]
+  all <- rbind(cbind(x0-wid, y0+ht),
+               cbind(x0,     y0+ht),
+               cbind(x0+wid, y0+ht),
+               cbind(x0-wid, y0),
+               cbind(x0,     y0),
+               cbind(x0+wid, y0),
+               cbind(x0-wid, y0-ht),
+               cbind(x0,     y0-ht),
+               cbind(x0+wid, y0-ht)
+               )
+  
+  dw <- wid * .2
+  dh <- ht * .2
+  cols <- c(rep("green", p$n1), rep("orangered", p$n2))
+  plot(all, xlim=c(w[1] - dw, w[2] + dw), ylim=c(w[3] - dh, w[4] + dh),
+       asp=1, col=cols, pch=19,cex=0.4)
+  title(main=paste("tor ", tor))
+  rect(w[1], w[3], w[2], w[4], lty=2)
+  symbols(x0, y0, circles=rep(r1/2, n1+n2), inch=FALSE, add=TRUE, fg=cols)
+}
+
+@ 
+
+The next two plots show bivariate PIPP without and with toroidal
+conditions, using the same h functions as before.
+
+<<fig=TRUE>>=
+example.tor2(tor=FALSE)
+@ 
+
+<<fig=TRUE>>=
+example.tor2(tor=TRUE)
+@ 
 
 \end{document}
 
