@@ -6,11 +6,11 @@
 %%\VignetteKeywords{h functions}
 %%\VignettePackage{sjedmin}
 
-\SweaveOpts{echo=T,pdf=F,eval=T}
+\SweaveOpts{echo=T,pdf=T,eps=F,eval=T}
 
 %% By including Sweave.sty myself, I can then override fonts loaded by that
 %% package, and use times.
-\usepackage{/usr/lib/R/share/texmf/Sweave}
+\usepackage{Sweave}
 \usepackage{mathptmx}
 
 \usepackage[a4paper,margin=2cm,noheadfoot]{geometry}
