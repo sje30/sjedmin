@@ -1,0 +1,49 @@
+2004-05-10  Stephen Eglen  <stephen@anc.ed.ac.uk>
+
+	* src/sjedmin.c (pipp_lookup, hlookup): New routines.
+
+2004-02-05  Stephen Eglen  <stephen@bushmills.inf.ed.ac.uk>
+
+	* R/sjedmin.R (dminlul): Use w to provide window, rather than wid,
+	ht.  Add safety check since a lot of code will use dminlul
+	(including Ben's.)
+
+2003-12-18  Stephen Eglen  <stephen@bushmills.inf.ed.ac.uk>
+
+
+	* R/sjedmin.R (plot.sjedmin2, dminlulfix2): Pass "w" boundary
+	argument so that dmin points are generated within this window;
+	otherwise we have also assume that the p2 population has origin at
+	0,0 which makes life difficult.
+
+	* src/sjedmin.c (dminlulfix2): as above.
+
+
+2003-11-26  Stephen Eglen  <stephen@bushmills.inf.ed.ac.uk>
+
+	* src/sjedmin.c (nnd_3d, nnd_n_3d, dminlulfix2): New functions for
+	3d dmin simulations and for allowing 2nd population to sit in a layer.
+
+	* R/sjedmin.R (dminlulfix2): New function.
+
+2003-03-17  Stephen Eglen  <eglen@pcg.wustl.edu>
+
+	* src/sjedmin.c (dminl, dminlul): Add new argument QUIET to remove
+	stdout from C.
+	* R/sjedmin.R (dminl, dminlul): Add new argument QUIET to remove
+	stdout from C.
+
+2002-10-31  Stephen Eglen  <eglen@thalamus.wustl.edu>
+
+	* src/sjedmin.c (dminlul): If upper is negative, no constraint on
+	upper bound.
+
+2002-09-11  Stephen Eglen  <eglen@thalamus.wustl.edu>
+
+	* R/sjedmin.R (dminsd, dminl, dminlulbd): Make result of class
+	"sjedmin" for plotting purposes.
+	(sjennd): New function to call the NND routine from R.
+
+	* src/sjedmin.c (sjenndp): New C function to allow NND function to
+	be called from R; to do this, we need all arguments passed as pointers.
+
