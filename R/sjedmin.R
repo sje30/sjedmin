@@ -139,9 +139,124 @@ dminlul <- function(wid = 1000, ht = 1000, npts = 200,
   res
 }
 
+dminlulfix2 <- function(wid = 1000, ht = 1000, npts = 200,
+                        dmin = 20, dminsd = 2, lower = 0, upper = 100,
+                        quiet = FALSE,
+                        p2=matrix( c(100, 100, 200, 400), nrow=2),
+                        d12=10)
+{
+  ## Lower and upper bound version of Lucia's dmin.
+  attempt <- 1
+  okay <- TRUE
+  trying <- TRUE
+  while (trying && (attempt < dminmaxattempts)) {
+    z <- .C("dminlulfix2",
+            as.double(wid),
+            as.double(ht),
+            as.integer(npts),
+            as.double(dmin),
+            as.double(dminsd),
+            as.double(lower), as.double(upper),
+            as.integer(quiet),
+            ## create memory to store return values.
+            x = double(npts),
+            y = double(npts),
+            dmins = double(npts),
+            nrejects = integer(npts+1),
+            as.double(p2[,1]), as.double(p2[,2]), as.integer(dim(p2)[1]),
+            as.double(d12),
+            PACKAGE="sjedmin"
+            )
+    if (z$x[1] > 0)
+      trying <- FALSE
+    else
+      attempt <- attempt + 1
+  }
+  if (attempt >= dminmaxattempts) {
+    cat(paste ("dminlul: ", dmin, dminsd, "fail after",
+                dminmaxattempts, "tries\n"))
+    ## just make a random distribution instead of a nice mosaic.
+    z$x <- (runif(npts) * wid)
+    z$y <- (runif(npts) * ht)
+    okay <- FALSE
+  }
+
+  ## Make up the return list.
+  note <- paste("dminlulfix2", dmin, dminsd, lower, upper,
+                (if (!okay) "NOT OKAY"))
+  res <- list(x = z$x, y = z$y, dmins = z$dmins,
+              nrejects = z$nrejects, okay = okay,
+              ##args=match.call(),
+              args=list(wid=wid, ht=ht, p2=p2, d12=d12),
+              attempts = attempt, note = note)
+  class(res) <- "sjedmin2"
+  res
+}
+
+dminlul3d <- function(wid = 1000, ht = 1000, dep=1000, npts = 200,
+                      dmin = 20, dminsd = 2, lower = 0, upper = 100,
+                      quiet = FALSE)
+{
+  ## Lower and upper bound version of Lucia's dmin.
+  attempt <- 1
+  okay <- TRUE
+  trying <- TRUE
+  while (trying && (attempt < dminmaxattempts)) {
+    z <- .C("dminlul3d",
+            as.double(wid),
+            as.double(ht),
+            as.double(dep),
+            as.integer(npts),
+            as.double(dmin),
+            as.double(dminsd),
+            as.double(lower), as.double(upper),
+            as.integer(quiet),
+            ## create memory to store return values.
+            x = double(npts),
+            y = double(npts),
+            z = double(npts),
+            dmins = double(npts),
+            nrejects = integer(npts), PACKAGE="sjedmin"
+            )
+    if (z$x[1] > 0)
+      trying <- FALSE
+    else
+      attempt <- attempt + 1
+  }
+  if (attempt >= dminmaxattempts) {
+    cat(paste ("dminlul: ", dmin, dminsd, "fail after",
+                dminmaxattempts, "tries\n"))
+    ## just make a random distribution instead of a nice mosaic.
+    z$x <- (runif(npts) * wid)
+    z$y <- (runif(npts) * ht)
+    z$z <- (runif(npts) * dep)
+    okay <- FALSE
+  }
+
+  ## Make up the return list.
+  note <- paste("dminlul", dmin, dminsd, lower, upper,
+                (if (!okay) "NOT OKAY"))
+  res <- list(x = z$x, y = z$y, z=z$z, dmins = z$dmins,
+              nrejects = z$nrejects, okay = okay,
+              attempts = attempt, note = note)
+  class(res) <- "sjedmin"
+  res
+}
+
 plot.sjedmin <- function(x) {
   ## Show the results of a dmin simulation.
   plot(x$x, x$y, asp=1, main=x$note)
+}
+
+     
+plot.sjedmin2 <- function(x, r1=12, r2=r1) {
+  ## Show the results of a dmin simulation.
+  ## r1 is radius of cell 1; r2 is radius of cell 2.
+  plot(NA, xlim=c(0, x$args$wid), ylim=c(0,x$args$ht), asp=1,main=x$note)
+  symbols(x$x, x$y, circles=rep(r1, length(x$x)),
+          inch=FALSE, add=TRUE)
+  symbols(x$args$p2, circles=rep( r2, dim(x$args$p2)[1]),
+          inch=FALSE, add=TRUE, bg="black")
 }
 
 dminlulbd <- function(wid = 1000, ht = 1000, npts = 200,
