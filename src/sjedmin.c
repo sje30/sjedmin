@@ -47,7 +47,7 @@ void nnd_3d(Sfloat *xs, Sfloat *ys, Sfloat *zs, int n,
 void bdmin_check(Sfloat *xpts, Sfloat *ypts, int n1, int n2,
 		 int i, Sfloat d, Sfloat d12, int *okay, int *id);
 
-
+void hlookup(Sfloat *h, Sfloat *ds, int *n, Sfloat *d, Sfloat *res);
      
 void pairwise_amac(Sfloat *wid, Sfloat *ht, int *numcells,
 		   Sfloat *xd1, Sfloat *p, Sfloat *b,
@@ -779,6 +779,143 @@ void dminlul3d(Sfloat *pwid, Sfloat *pht, Sfloat *pdepth, int *pnumcells,
   RANDOUT;
 }
 
+
+void pipp_lookup(Sfloat *pw, int *pn,
+		 Sfloat *ph, Sfloat *pd, int *hlen,
+		 int *pnsweeps, int *pverbose,
+		 Sfloat *xpts, Sfloat *ypts, int *okay)
+{
+
+  /* PIPP: Pairwise interaction point processes.  The h() function is
+   * converted into a lookup table for speed and generality.
+   * On exit, if *OKAY is 1, the simulation was fine.
+   */
+  
+  int num_rejects = 0, this_cell_rejects;
+  int looking, nrejects;
+  int i, j, sweep, constraint, id;
+  int n;
+  Sfloat x,y;
+  Sfloat min; int idx;
+  Sfloat prob, dx, dy, dist, p;
+  Sfloat lower, upper;
+
+  Sfloat xmin, xmax, ymin, ymax, wid, ht;
+  RANDIN;
+
+  sweep = *pnsweeps;
+  n = *pn;
+  
+  xmin = pw[0]; xmax = pw[1]; ymin = pw[2]; ymax = pw[3];
+  if (1 && *pverbose) {
+    Rprintf("field %f %f %f %f\n", xmin, xmax, ymin, ymax);
+    Rprintf("npts %d\n", n);
+    Rprintf("LUT has %d entries in range (%f, %f) to (%f, %f)\n",
+	    *hlen, pd[0], ph[0], pd[(*hlen)-1], ph[(*hlen)-1]);
+  }
+  wid = xmax - xmin; ht = ymax - ymin;
+
+  *okay = 1;			/* assume simulation will be okay. */
+  while( sweep-- > 0) {
+    /*Perform one complete sweep, updating positions of cells.  */
+    if (*pverbose) 
+      Rprintf("sweep %d\n", sweep);
+
+    for (i=0; i<n; i++) {
+
+      /* move cell i. */
+   
+      looking = 1; this_cell_rejects = 0;
+      while (looking) {
+      
+	/* generate a trial position at random. */
+	x = xmin + (UNIF * wid); y = ymin + (UNIF * ht);
+	xpts[i] = x; ypts[i] = y;
+
+	prob = 1;
+	for (j=0; j<n; j++) {
+	  if (i!=j) {
+	    dx = xpts[j] - x; dy = ypts[j] - y;
+	    dist = sqrt( (dx*dx) + (dy*dy) );
+	    hlookup(ph, pd, hlen, &dist, &p);
+	    prob *= p;
+	  }
+	}
+
+	if ( UNIF < prob) {
+	  /* Accept this cell position. */
+	  looking = 0;
+	} else {
+	  if (this_cell_rejects++ > 99999) {
+	    /* Taking far too long to replace one cell, so error. */
+	    Rprintf("pipp_d: trouble converging %d\n", this_cell_rejects);
+	    *okay = 0;
+	    sweep = 0; looking=0; i=n; /* end all loops */
+	  }
+	}
+      }
+    } /* next cell */
+  } /* next sweep */
+
+  RANDOUT;
+    
+}
+
+
+void hlookup(Sfloat *h, Sfloat *ds, int *n, Sfloat *d, Sfloat *res)
+  /* Find h(d) from the lookup table.  Lookup table has *N entries in
+   * it.  Return result in *RES.  Do not use return value of function,
+   * so that we can interface with R code.
+   */
+{
+  int i;
+  Sfloat d1, d2, h1, h2;
+
+  /*
+  Rprintf("lookup value of %f in following table\n", *d);
+  for (i=0; i<*n; i++) {
+    Rprintf("%.3f %.3f\n", h[i], ds[i]);
+  }
+  Rprintf("max entry: %f\n", ds[(*n)-1]);
+  */
+  
+  if (*d < ds[0])
+    *res = 0.0;			/* d lower than smallest entry in LUT */
+  else {
+    if (*d > ds[(*n)-1] ) {
+      *res = 1.0;		/* d higher than entries in LUT */
+    } else {
+      /* lookup value of d. */
+      i=0;
+      while( ds[i] < *d) {
+	i++;
+      }
+      /* d1 is smaller than d, d2 is larger than d. 
+       * therefore *RES lies between h1 and h2. 
+       * Use linear interpolation to guess *RES.*/
+      d1 = ds[i-1]; d2 = ds[i];
+      h1 = h[i-1]; h2 = h[i];
+
+      *res = h1 + ( (h2-h1)/(d2-d1) * (*d-d1));
+    }
+  }
+}
+  
+
+
+#ifdef unused
+Sfloat hlookup(Sfloat *ph, Sfloat *ph_inc, Sfloat *ph_n, Sfloat *d) {
+  /* Find h(d) from the lookup table.
+   * All args given as pointers so that we can call it from R to check. */
+  int index;
+  index = (int) (*d/ *ph_inc);
+  if (index >= *ph_n)
+    return 1.0;			/* Assume end value. */
+  else {
+    return ph[index];		/* Could interpolate? */
+  }
+}
+#endif
 
 void dminacc(Sfloat *pwid, Sfloat *pht, int *pnumcells,
 	     Sfloat *acc, Sfloat *dmax, Sfloat *inc,
