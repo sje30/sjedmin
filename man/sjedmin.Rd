@@ -8,11 +8,12 @@
 }
 \usage{
 dminl(wid, ht, npts, dmin, dminsd, quiet)
-dminlul(wid, ht, npts, dmin, dminsd, lower, upper, quiet)
+dminlul(w, npts, dmin, dminsd, lower, upper, quiet)
 plot.sjedmin(res)
 }
 \arguments{
   \item{wid,ht}{Width and height of the rectangular region to simulate.}
+  \item{w}{A vector of length 4 giving: (xmin, xmax, ymin, ymax)}
   \item{npts}{Number of (2-d) points to generate.}
   \item{dmin,dminsd}{Mean and standard deviation of the dmin rule.}
   \item{lower,upper}{Lowest and highest possible values of dmin to
@@ -50,17 +51,18 @@ plot.sjedmin(res)
 \examples{
 wid <- 500; ht <- 500; ncells <- 400; dmin.mean <- 20; dmin.sd <- 4
 dmin.lower <- 12; dmin.higher <- 28
+w <- c( 100, 100+wid, 200, 200+ht)
 par(mfcol=c(3,3))
 d1 <- dminl(wid, ht, ncells, dmin.mean, dmin.sd)
 plot(d1)
 plot(d1$nrejects, main="rejects increase as function of cells placed",
 xlab="cell number", ylab="# rejects")
 hist(d1$dmins)
-d2 <- dminlul(wid, ht, ncells, dmin.mean, dmin.sd, dmin.lower,dmin.higher)
+d2 <- dminlul(w, ncells, dmin.mean, dmin.sd, dmin.lower,dmin.higher)
 plot(d2)
 plot(d2$nrejects, xlab="cell number", ylab="# rejects")
 hist(d2$dmins)
-d3 <- dminlul(wid, ht, ncells, dmin.mean, dmin.sd, dmin.lower,-1)
+d3 <- dminlul(w+2000, ncells, dmin.mean, dmin.sd, dmin.lower,-1)
 plot(d3)
 plot(d3$nrejects, xlab="cell number", ylab="# rejects")
 hist(d3$dmins)

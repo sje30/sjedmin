@@ -11,6 +11,16 @@
  */
 
 
+/* TODO items:
+ * Maybe pass all parameters in one vector, rather than using
+ * many different arguments.  makes the C/R interface shorter.
+ *
+ * Birth & death routine: return the dmin value used at each iteration?
+ * To do this, I need to know in advance how many iterations to run
+ * for -- maybe have default mm as 40 * npts in R code?
+ */
+
+
 #define MAXREJECTS 999999
 /* This is the maximum number of cells that we can reject before
  * abandoning this simulation.  (This is the total through the simulation,
@@ -316,7 +326,7 @@ void dminl(Sfloat *pwid, Sfloat *pht, int *pnumcells,
 }
 
 
-void dminlul(Sfloat *pwid, Sfloat *pht, int *pnumcells,
+void dminlul(Sfloat *pw, int *pnumcells,
 	     Sfloat *pdmin, Sfloat *psd,
 	     Sfloat *plower, Sfloat *pupper,
 	     int *quiet,
@@ -341,11 +351,12 @@ void dminlul(Sfloat *pwid, Sfloat *pht, int *pnumcells,
   Sfloat min; int idx;
   Sfloat this_dmin;
   Sfloat lower, upper;
-
+  Sfloat xmin, xmax, ymin, ymax, wid, ht;
 
 
   RANDIN;
-
+  xmin = pw[0]; xmax = pw[1]; ymin = pw[2]; ymax = pw[3];
+  wid = xmax - xmin; ht = ymax - ymin;
   lower = *plower; upper = *pupper;
   for (i=0; i<*pnumcells; i++) {
 
@@ -362,8 +373,8 @@ void dminlul(Sfloat *pwid, Sfloat *pht, int *pnumcells,
       }
 
       /*Rprintf("this val %lf\n", this_dmin); */
+      x = xmin + (UNIF * wid); y = ymin + (UNIF * ht);
 
-      x = UNIF * (*pwid); y = UNIF * (*pht);
       
       nnd_n( xpts, ypts, i, x, y, &idx, &min);
       /*min = 1000; */
@@ -401,7 +412,7 @@ void dminlul(Sfloat *pwid, Sfloat *pht, int *pnumcells,
 
   if (!*quiet)
     Rprintf("#rejects %d\tdminlul packing density %.3f\n", num_rejects,
-	    ((*pnumcells * PI * *pdmin * *pdmin)/( 4 * *pwid * *pht)));
+	    ((*pnumcells * PI * *pdmin * *pdmin)/( 4 * wid * ht)));
 
   RANDOUT;
 }
