@@ -7,8 +7,8 @@
   Create mosaics that respect the dmin rule.
 }
 \usage{
-dminl(wid, ht, npts, dmin, dminsd)
-dminlul(wid, ht, npts, dmin, dminsd, lower, upper)
+dminl(wid, ht, npts, dmin, dminsd, quiet)
+dminlul(wid, ht, npts, dmin, dminsd, lower, upper, quiet)
 plot.sjedmin(res)
 }
 \arguments{
@@ -21,6 +21,7 @@ plot.sjedmin(res)
     value created.  The lower bound should be set to at least the soma diameter
     if you want to take soma size into account.  If upper is negative,
     no upper bound on dmin values is imposed.}
+  \item{quiet}{Set to true if you want no printout from routine.}
 }
 \value{
   Res is a list with components:
@@ -63,6 +64,13 @@ d3 <- dminlul(wid, ht, ncells, dmin.mean, dmin.sd, dmin.lower,-1)
 plot(d3)
 plot(d3$nrejects, xlab="cell number", ylab="# rejects")
 hist(d3$dmins)
+
+## Generate dmin taking into consideration a set of cells already in the layer.
+par(mfrow=c(1,1))
+r1 <- 12; r2 <- 50 ## radii of cells
+d <- dminlulfix2(dmin=2*r1, dminsd=0.01, d12=r1+r2, npts=1000,
+                 p2=matrix(c (200,500, 800, 750, 700,500, 800, 160),ncol=2))
+plot(d, r1=r1, r2=r2)
 }
 \author{Stephen Eglen}
 \keyword{spatial}
