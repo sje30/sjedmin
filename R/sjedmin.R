@@ -2,11 +2,6 @@
 ##
 ## Load with source("/home/stephen/langs/R/c-code/dminsd.r")
 
-if (is.loaded(symbol.C("dminl")))
-  dyn.unload("~/langs/R/c-code/pairwise_amac.so")
-
-dyn.load("~/langs/R/c-code/pairwise_amac.so")
-
 dminmaxattempts <- 20                    #number of attempts before giving up.
 
 dminsd <- function(wid = 1000, ht = 1000, npts = 200,
@@ -42,7 +37,6 @@ dminsd <- function(wid = 1000, ht = 1000, npts = 200,
     okay <- FALSE
   }
 
-  ## Even if we couldn't make it, just return something?
   ## Make up the return list.
   note <- paste("dminsd", dmin, dminsd)
   list(x = z$x, y = z$y, dmins = z$dmins, nrejects = z$nrejects, okay = okay,
@@ -54,6 +48,7 @@ dminsd <- function(wid = 1000, ht = 1000, npts = 200,
 dminl <- function(wid = 1000, ht = 1000, npts = 200,
                    dmin = 20, dminsd = 2)
 {
+  ## Simple version of Lucia's dmin.
   attempt <- 1
   okay <- TRUE
   trying <- TRUE
@@ -84,7 +79,6 @@ dminl <- function(wid = 1000, ht = 1000, npts = 200,
     okay <- FALSE
   }
 
-  ## Even if we couldn't make it, just return something?
   ## Make up the return list.
   note <- paste("dminl", dmin, dminsd)
   list(x = z$x, y = z$y, dmins = z$dmins, nrejects = z$nrejects, okay = okay,
@@ -96,6 +90,7 @@ dminl <- function(wid = 1000, ht = 1000, npts = 200,
 dminlul <- function(wid = 1000, ht = 1000, npts = 200,
                     dmin = 20, dminsd = 2, lower = 0, upper = 100)
 {
+  ## Lower and upper bound version of Lucia's dmin.
   attempt <- 1
   okay <- TRUE
   trying <- TRUE
@@ -127,12 +122,18 @@ dminlul <- function(wid = 1000, ht = 1000, npts = 200,
     okay <- FALSE
   }
 
-  ## Even if we couldn't make it, just return something?
   ## Make up the return list.
-  note <- paste("dminlul", dmin, dminsd, lower, upper)
-  list(x = z$x, y = z$y, dmins = z$dmins, nrejects = z$nrejects, okay = okay,
-       attempts = attempt, note = note)
-  
+  note <- paste("dminlul", dmin, dminsd, lower, upper,
+                (if (!okay) "NOT OKAY"))
+  res <- list(x = z$x, y = z$y, dmins = z$dmins,
+              nrejects = z$nrejects, okay = okay,
+              attempts = attempt, note = note)
+  class(res) <- "sjedmin"
+}
+
+plot.sjedmin <- function(x) {
+  ## Show the results of a dmin simulation.
+  plot(x$x, x$y, asp=1, main=x$note)
 }
 
 dminlulbd <- function(wid = 1000, ht = 1000, npts = 200,
@@ -170,7 +171,6 @@ dminlulbd <- function(wid = 1000, ht = 1000, npts = 200,
     okay <- FALSE
   }
 
-  ## Even if we couldn't make it, just return something?
   ## Make up the return list.
   note <- paste("dminlulbd", dmin, dminsd, lower, upper)
   list(x = z$x, y = z$y, dmins = z$dmins, nrejects = z$nrejects, okay = okay,
@@ -217,7 +217,6 @@ dminacc <- function(wid = 1000, ht = 1000, npts = 200,
     okay <- FALSE
   }
 
-  ## Even if we couldn't make it, just return something?
   ## Make up the return list.
   note <- paste("dmin.acc", dmax)
   list(x = z$x, y = z$y, dmins = z$dmins, nrejects = z$nrejects, okay = okay,
@@ -228,7 +227,7 @@ dminacc <- function(wid = 1000, ht = 1000, npts = 200,
 make.acc <- function (l, dmax) {
   ## Make an acceptance function from a L function.
   ## This is useful for dmin.acc() and dminacc.bd()
-  k <- l^2 * pi; kmax <- k[dmax+1] #1 since steps starts from 0um.
+  k <- l^2 * pi; kmax <- k[length(k)] 
   acc <- k / kmax; acc <- pmin(acc, 1.0)
   acc
 }
@@ -269,7 +268,6 @@ dminacc.bd <- function(wid = 1000, ht = 1000, npts = 200,
     okay <- FALSE
   }
 
-  ## Even if we couldn't make it, just return something?
   ## Make up the return list.
   note <- paste("dminacc.bd", dmax)
   list(x = z$x, y = z$y, dmins = z$dmins, nrejects = z$nrejects, okay = okay,
@@ -299,7 +297,6 @@ damac <- function(wid = 1000, ht = 1000, npts = 200,
     trying <- FALSE
   }
 
-  ## Even if we couldn't make it, just return something?
   ## Make up the return list.
   note <- paste("damac", d1, beta, upper)
   list(x = z$x, y = z$y, note = note)
@@ -308,10 +305,10 @@ damac <- function(wid = 1000, ht = 1000, npts = 200,
 
 hamac <- function(t, lower, upper, beta)
 {
-  ## Test the hamac function
+  ## Test the hamac function in C.
   ## ts <- seq(0, 100, by=1);
   ## hs <- lapply(ts, function (x) hamac(x, 19, 76, 0.3)); plot(ts, hs)
-
+  ## This was taken from the Diggle & Gratton (1984) paper.
   z <- .C("h_amac",
           as.double(t),
           as.double(lower),
@@ -324,4 +321,4 @@ hamac <- function(t, lower, upper, beta)
 }
 
 
-## dyn.unload("/home/stephen/langs/R/c-code/pairwise_amac.so");
+
