@@ -252,6 +252,7 @@ bdmin.bd <- function(w=c(0, 1000, 0, 1000),
 
 plot.sjebdmin <- function(x) {
   plot(x$x, x$y, asp=1, pch=19,
+       main=title(paste("bdmin", paste(b$args$params, collapse='  '))),
        col= c( rep("green", x$n1), rep("orangered", x$n2)))
 }
 
