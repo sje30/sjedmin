@@ -327,6 +327,80 @@ pipp.lookup <- function(w=c(0, 1000, 0, 1000),
   res
 }
 
+pipp2.lookup <- function(w=c(0, 1000, 0, 1000),
+                         pts1=NULL, pts2=NULL,
+                         n1=100, n2 = 100,
+                         h1, d1, h2, d2, h12, d12,
+                         nsweeps=10,
+                         verbose = FALSE)
+{
+  ## pipp: Pairwise Interaction Point Process
+  ## Works using a lookup table idea.
+
+  npts <- n1 + n2
+  ## If initial PTS are not provided, generate some at random.
+  if (is.null(pts1))
+    pts1 <- cbind(w[1] +  (runif(n1) * (w[2] - w[1])),
+                 w[3] + (runif(n1) * (w[4] - w[3])))
+
+  if (is.null(pts2))
+    pts2 <- cbind(w[1] +  (runif(n2) * (w[2] - w[1])),
+                  w[3] + (runif(n2) * (w[4] - w[3])))
+
+  pts <- rbind(pts1, pts2)
+  ## Could include a check that pts are within window.
+
+  attempt <- 1
+  okay <- TRUE
+  trying <- TRUE
+  while (trying && (attempt < dminmaxattempts)) {
+    z <- .C("pipp2_lookup",
+            as.double(w),
+            as.integer(n1), as.integer(n2),
+            as.double(h1), as.double(d1), as.integer(length(d1)),
+            as.double(h2), as.double(d2), as.integer(length(d2)),
+            as.double(h12), as.double(d12), as.integer(length(d12)),
+            as.integer(nsweeps),
+            as.integer(verbose),
+            x = as.double(pts[,1]),
+            y = as.double(pts[,2]),
+            okay = integer(1),
+            PACKAGE="sjedmin")
+    if (z$okay > 0)
+      trying <- FALSE
+    else
+      attempt <- attempt + 1
+  }
+  if (attempt >= dminmaxattempts) {
+    cat(paste ("pipp2.lookup fail after", 
+                dminmaxattempts, "tries\n"))
+    ## just make a random distribution
+    z$x <- w[1] +  (runif(npts) * (w[2] - w[1]))
+    z$y <- w[3] + (runif(npts) * (w[4] - w[3]))
+    okay <- FALSE
+  }
+
+  ## Make up the return list.
+  note <- paste("pipp.lookup")
+  res <- list(x = z$x, y = z$y, 
+              okay = okay,
+              n1=n1, n2=n2,
+              ##args=match.call(),
+              args=list(w=w, h1=h1, d1=d1, h2=h2, d2=d2, h12=h12, d12=d12),
+              attempts = attempt, note = note, w=w)
+  class(res) <- "pipp2"
+  res
+}
+
+plot.pipp2 <- function(x) {
+  ## Plotting function for output from pipp2.lookup().
+  plot(x$x, x$y, asp=1, pch=19,
+       main=title(paste("pipp2"), 
+         ifelse(x$okay, "OK", "!OK") ),
+       col= c( rep("green", x$n1), rep("orangered", x$n2)))
+  rect( x$w[1], x$w[3], x$w[2], x$w[4], lty=2)
+}
+
 hlookup <- function(h, d, r) {
   z <- .C("hlookup", as.double(h), as.double(d),
           as.integer(length(h)),
@@ -387,9 +461,9 @@ dminlul3d <- function(wid = 1000, ht = 1000, dep=1000, npts = 200,
   res
 }
 
-plot.sjedmin <- function(x) {
+plot.sjedmin <- function(x, ...) {
   ## Show the results of a dmin simulation.
-  plot(x$x, x$y, asp=1, main=x$note, xlab='', ylab='')
+  plot(x$x, x$y, asp=1, main=x$note, xlab='', ylab='', ...)
 }
 
      
