@@ -41,7 +41,6 @@ form}
 \section{The h function}
 
 <<echo=F>>=
-invisible(.libPaths( Sys.getenv("MYRLIB")))
 library(sjedmin)
 @ 
 
