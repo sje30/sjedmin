@@ -22,7 +22,7 @@ dminsd <- function(wid = 1000, ht = 1000, npts = 200,
             y = double(npts),
             dmins = double(npts),
             nrejects = integer(npts),
-            )
+            PACKAGE="sjedmin")
     if (z$x[1] > 0)
       trying <- FALSE
     else
@@ -65,7 +65,7 @@ dminl <- function(wid = 1000, ht = 1000, npts = 200,
             x = double(npts),
             y = double(npts),
             dmins = double(npts),
-            nrejects = integer(npts),
+            nrejects = integer(npts), PACKAGE="sjedmin"
             )
     if (z$x[1] > 0)
       trying <- FALSE
@@ -110,7 +110,7 @@ dminlul <- function(wid = 1000, ht = 1000, npts = 200,
             x = double(npts),
             y = double(npts),
             dmins = double(npts),
-            nrejects = integer(npts),
+            nrejects = integer(npts), PACKAGE="sjedmin"
             )
     if (z$x[1] > 0)
       trying <- FALSE
@@ -160,7 +160,7 @@ dminlulbd <- function(wid = 1000, ht = 1000, npts = 200,
             x = double(npts),
             y = double(npts),
             dmins = double(npts),
-            nrejects = integer(npts),
+            nrejects = integer(npts), PACKAGE="sjedmin"
             )
     if (z$x[1] > 0)
       trying <- FALSE
@@ -208,7 +208,7 @@ dminacc <- function(wid = 1000, ht = 1000, npts = 200,
             ## create memory to store return values.
             x = double(npts),
             y = double(npts),
-            nrejects = integer(npts),
+            nrejects = integer(npts), PACKAGE="sjedmin"
             )
     if (z$x[1] > 0)
       trying <- FALSE
@@ -261,7 +261,7 @@ dminacc.bd <- function(wid = 1000, ht = 1000, npts = 200,
             ## create memory to store return values.
             x = double(npts),
             y = double(npts),
-            nrejects = integer(npts),
+            nrejects = integer(npts), PACKAGE="sjedmin"
             )
     if (z$x[1] > 0)
       trying <- FALSE
@@ -303,7 +303,7 @@ damac <- function(wid = 1000, ht = 1000, npts = 200,
             as.double(beta),
             ## create memory to store return values.
             x = double(npts),
-            y = double(npts),
+            y = double(npts), PACKAGE="sjedmin"
             )
     trying <- FALSE
   }
@@ -327,7 +327,7 @@ hamac <- function(t, lower, upper, beta)
           as.double(upper),
           as.double(beta),
           ## create memory to store return values.
-          h = double(1),
+          h = double(1), PACKAGE="sjedmin"
           )
   z$h
 }
@@ -344,7 +344,7 @@ sjennd <- function(x, y, a, b) {
           as.double(-1),
           ## create memory to store return values.
           id = integer(1),
-          dist = double(1)
+          dist = double(1), PACKAGE="sjedmin"
           )
   zero.one.offset <- 1                  #C arrays are zero-based.
   res <- list(id=z$id + zero.one.offset, dist=z$dist)
