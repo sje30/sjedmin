@@ -48,7 +48,7 @@ dminsd <- function(wid = 1000, ht = 1000, npts = 200,
 
 
 dminl <- function(wid = 1000, ht = 1000, npts = 200,
-                   dmin = 20, dminsd = 2)
+                   dmin = 20, dminsd = 2, quiet=FALSE)
 {
   ## Simple version of Lucia's dmin.
   attempt <- 1
@@ -61,6 +61,7 @@ dminl <- function(wid = 1000, ht = 1000, npts = 200,
             as.integer(npts),
             as.double(dmin),
             as.double(dminsd),
+            as.integer(quiet),
             ## create memory to store return values.
             x = double(npts),
             y = double(npts),
@@ -92,7 +93,8 @@ dminl <- function(wid = 1000, ht = 1000, npts = 200,
 
 
 dminlul <- function(wid = 1000, ht = 1000, npts = 200,
-                    dmin = 20, dminsd = 2, lower = 0, upper = 100)
+                    dmin = 20, dminsd = 2, lower = 0, upper = 100,
+                    quiet = FALSE)
 {
   ## Lower and upper bound version of Lucia's dmin.
   attempt <- 1
@@ -106,6 +108,7 @@ dminlul <- function(wid = 1000, ht = 1000, npts = 200,
             as.double(dmin),
             as.double(dminsd),
             as.double(lower), as.double(upper),
+            as.integer(quiet),
             ## create memory to store return values.
             x = double(npts),
             y = double(npts),
