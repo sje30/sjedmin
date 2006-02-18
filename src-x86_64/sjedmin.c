@@ -696,14 +696,30 @@ void dminlul3d(Sfloat *pwid, Sfloat *pht, Sfloat *pdepth, int *pnumcells,
 	       Sfloat *dmins, int *nrejects)
 
 {
-  /* 3-d version of dminlul.
-   * Create NUMCELLS cells distributed in an volume of size wid*ht*depth.
-   * Minimum distance between cells should be at least dmin.  On exit,
-   * we return an array of cells stored in (xs, ys, zs).  NJRECTS stores
-   * the number of rejected cells.  This is Lucia's version, where a
-   * new dmin value is created every time, regardless of whether the
-   * trial cell was accepted or not.  Also provide arguments LOWER
-   * and UPPER: dmin values outside this range are rejected.
+  /* 3-d version of Dmin rule.
+   *
+   * (P prefix on variable names indicates that variable is a pointer
+   * to the value, not the value.)
+   *
+   * Create NUMCELLS cells distributed in an volume of size WID*HT*DEPTH.
+   * This assumes one corner of the volume is the origin.
+   *
+   * The dmin value is chosen from a Normal distribution with mean
+   * DMIN and s.d. of SD.  The dmin value is also bounded to lie
+   * between LOWER and UPPER.  (LOWER is normally set to the size of a
+   * cell body and UPPER can be ignored by setting it to a negative
+   * number.)
+   *
+   * On exit, we return an array of cells stored in (XPTS, YPTS,
+   * ZPTS).  If the simulation could not be performed (e.g. if DMIN
+   * too high), the first value of XPTS is set to a negative value.
+   * NJRECTS is a vector; NREJECTS[i] stores the number of cells that
+   * were rejected when trying to position cell i.
+   *
+   * A new dmin value is created every time, regardless of whether
+   * the trial cell was accepted or not.
+   *
+   * QUIET is a debugging option.
    */
   
 
@@ -746,7 +762,6 @@ void dminlul3d(Sfloat *pwid, Sfloat *pht, Sfloat *pdepth, int *pnumcells,
 	 * the upper distance will be the value returned by nnd_n,
 	 * ie.s. some huge number. */
 
-	 
 	/* reject cell and try another. */
 	num_rejects++;
 	this_cell_rejects++;
@@ -754,8 +769,7 @@ void dminlul3d(Sfloat *pwid, Sfloat *pht, Sfloat *pdepth, int *pnumcells,
 	  /* If we cannot fit more cells in, return and indicate error
 	   * by setting first x coordinate to negative value.
 	   */
-	  printf("dminlul error: num_rejects is too high (%s:%d)\n",
-		 __FILE__, __LINE__);
+	  printf("dminlul error: num_rejects is too high\n");
 	  xpts[0] = -1;
 	  RANDOUT;
 	  return;
@@ -777,7 +791,6 @@ void dminlul3d(Sfloat *pwid, Sfloat *pht, Sfloat *pdepth, int *pnumcells,
 	    ((*pnumcells * PI * 1/8 * *pdmin * *pdmin * *pdmin)/
 	     ( (3.0/4.0) * *pdepth * *pwid * *pht)));
   }
-
 
   RANDOUT;
 }
