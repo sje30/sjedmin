@@ -203,7 +203,7 @@ p <- pipp.lookup(n1=amac.on$n, pts=NULL,
 par(mfrow=c(2,2))
 plot(amac.on)
 plot(x, h, main='non par estimate of h() for amac.on', type='l')
-plot(p, main='sim of amac.on from pipp.lookup',asp=1)
+plot(p, main='sim of amac.on from pipp.lookup')
 @ 
 
 
