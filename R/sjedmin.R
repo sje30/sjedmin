@@ -201,13 +201,15 @@ bdmin.bd <- function(w=c(0, 1000, 0, 1000),
                      n1=100, n2=100,
                      d1=20, d1.sd=2,
                      d2=20, d2.sd=2,
-                     d12=12,
+                     d12=12, d12.sd=-1,
                      lower = 0, upper = -1,
                      nsweeps=10,
                      verbose = FALSE)
 {
   ## Bivariate dmin simulation, with birth&death algorithm.
 
+  ## If d12.sd is negative, it means we do not have any variance on d12.
+  
   npts <- n1+n2
 
   ## If initial PTS are not provided, generate some at random.
@@ -216,7 +218,7 @@ bdmin.bd <- function(w=c(0, 1000, 0, 1000),
                  w[3] + (runif(npts) * (w[4] - w[3])))
   
   ## Could include a check that pts are within window.
-  params <- c(d1, d1.sd, d2, d2.sd, d12, lower, upper)
+  params <- c(d1, d1.sd, d2, d2.sd, d12, d12.sd, lower, upper)
   attempt <- 1
   okay <- TRUE
   trying <- TRUE
@@ -324,7 +326,7 @@ pipp.lookup <- function(w=c(0, 1000, 0, 1000),
               ##args=match.call(),
               args=list(w=w, h=h, d=d),
               attempts = attempt, note = note, w=w)
-  class(res) <- "pipp.lookup"
+  class(res) <- "pipp"
   res
 }
 
@@ -404,6 +406,15 @@ plot.pipp2 <- function(x) {
        main=title(paste("pipp2"), 
          ifelse(x$okay, "OK", "!OK") ),
        col= c( rep("green", x$n1), rep("orangered", x$n2)))
+  rect( x$w[1], x$w[3], x$w[2], x$w[4], lty=2)
+}
+
+plot.pipp <- function(x, main=NULL) {
+  ## Plotting function for output from pipp.lookup().
+  if (is.null(main)) {
+    main <- paste("pipp", ifelse(x$okay, "OK", "!OK"))
+  }
+  plot(x$x, x$y, asp=1, pch=19, main=main)
   rect( x$w[1], x$w[3], x$w[2], x$w[4], lty=2)
 }
 

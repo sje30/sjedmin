@@ -545,32 +545,34 @@ void bdmin_bd(Sfloat *pw, int *pn1, int *pn2,
   int num_rejects = 0, this_cell_rejects;
   int looking, generate_dmin;
   int i, sweep, constraint, id;
-  int n, n1, n2;
+  int n, n1, n2, regen_d12;
   Sfloat x,y;
   Sfloat min; int idx;
-  Sfloat this_dmin;
+  Sfloat this_dmin, this_d12;
   Sfloat lower, upper;
 
   Sfloat xmin, xmax, ymin, ymax, wid, ht;
-  Sfloat d1, sd1, d2, sd2, d12;
+  Sfloat d1, sd1, d2, sd2, d12, d12sd;
   Sfloat dmin_mu, dmin_sd;
   RANDIN;
 
   /* Extract relevant exclusion zone parameters. */
   d1  = params[0]; sd1 = params[1];
   d2  = params[2]; sd2 = params[3];
-  d12 = params[4];
-  lower = params[5]; upper = params[6];
+  d12 = params[4]; d12sd = params[5];
+  lower = params[6]; upper = params[7];
   
   sweep = *pnsweeps;
   n1 = *pn1; n2 = *pn2; n = n1 + n2;
   
   xmin = pw[0]; xmax = pw[1]; ymin = pw[2]; ymax = pw[3];
-  if (0 && *pverbose) {
+  regen_d12 = (d12sd > 0);
+  if (1 && *pverbose) {
     Rprintf("field %f %f %f %f\n", xmin, xmax, ymin, ymax);
     Rprintf("n1 %d n2 %d\n", n1, n2);
-    Rprintf("d1 %f +/- %f d2 %f +/- %f d12 %f\n",
-	    d1, sd1, d2, sd2, d12);
+    Rprintf("d1 %f +/- %f d2 %f +/- %f d12 %f +/- %f\n",
+	    d1, sd1, d2, sd2, d12, d12sd);
+    Rprintf("regen d12: %d\n", regen_d12);
   }
   wid = xmax - xmin; ht = ymax - ymin;
 
@@ -590,7 +592,17 @@ void bdmin_bd(Sfloat *pw, int *pn1, int *pn2,
 
       looking = 1; this_cell_rejects = 0;
       while (looking) {
-      
+
+	if (regen_d12) {
+	  generate_dmin = 1;
+	  while (generate_dmin) {
+	    this_d12 = d12 + (d12sd * norm_rand());
+	    if  (this_d12 > lower)
+	      generate_dmin = 0;
+	  }
+	} else {
+	  this_d12 = d12;
+	}
 	generate_dmin = 1;
 	while (generate_dmin) {
 	  this_dmin = dmin_mu + (dmin_sd * norm_rand());
@@ -605,7 +617,7 @@ void bdmin_bd(Sfloat *pw, int *pn1, int *pn2,
 	xpts[i] = x; ypts[i] = y;
 
 	bdmin_check(xpts, ypts, n1, n2, i,
-		    this_dmin, d12, &constraint, &id);
+		    this_dmin, this_d12, &constraint, &id);
 
 	if (*pverbose) 
 	  Rprintf("cell %d pos %f %f constraint %d id %d\n",
