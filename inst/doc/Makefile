@@ -9,8 +9,10 @@ hlookup.ps: hlookup.tex
 hlookup.tex: hlookup.Rnw
 	echo 'Sweave("$^")' | R --vanilla -q
 
+
+# Does not delete hlookup.pdf, final requirement.
+.PHONY:
 clean:
-	## does not delete hlookup.pdf, final requirement.
 	rm -f hlookup.tex hlookup-*.pdf  \
 	hlookup-*.eps hlookup.dvi hlookup.log hlookup.aux
 
