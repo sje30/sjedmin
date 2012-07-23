@@ -138,8 +138,8 @@ void dminlulbd(Sfloat *pw, int *numcells,
    * NJRECTS stores the number of rejected cells.
    */
   
-  int i,j, mm, id, okay, generate_r;
-  Sfloat x1, y1, dist2, u, r, rr, lower, upper;
+  int i,j, mm, id, okay, generate_r, num_rejects;
+  Sfloat x1, y1, dist2, r, rr, lower, upper;
   Sfloat xmin, xmax, ymin, ymax, wid, ht;
   int n = *numcells;
 
@@ -160,13 +160,12 @@ void dminlulbd(Sfloat *pw, int *numcells,
     if ( 0 && (i%100)==0)
       Rprintf("it %d:select new point for unit %d\n", i,id);
     xpts[id] = xpts[0]; ypts[id] = ypts[0];
-
+    num_rejects = 0;		/* reset to zero. */
     do {
       
       /* generate a new point. */
       xpts[0] = xmin + (UNIF * wid); ypts[0] = ymin + (UNIF * ht);
 /*       Rprintf("generate new trial at %f %f\n", xpts[0], ypts[0]); */
-      u = UNIF;
       okay = 1;
       
       /* genereate a new dmin value. */
@@ -183,6 +182,19 @@ void dminlulbd(Sfloat *pw, int *numcells,
 	dist2 = (x1*x1) + (y1*y1);
 	if (dist2 < rr) {
 	  okay = 0;
+
+	  num_rejects++;
+	  if (num_rejects > MAXREJECTS) {
+	    /* If we cannot fit more cells in, return and indicate error
+	     * by setting first x coordinate to negative value.
+	     */
+	    printf("dminlulbd error: num_rejects is too high (%s:%d)\n",
+		   __FILE__, __LINE__);
+	    xpts[0] = -1;
+	    RANDOUT;
+	    return;
+	  }
+
 	  break; /* quit for loop and try again. */
 	}
       }
