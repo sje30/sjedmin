@@ -526,8 +526,8 @@ dminlulbd <- function(w, npts = 200,
     cat(paste ("dminlulbd: ", dmin, dminsd, "fail after",
                 dminmaxattempts, "tries\n"))
     ## just make a random distribution instead of a nice mosaic.
-    z$x <- (runif(npts) * wid)
-    z$y <- (runif(npts) * ht)
+    z$x <- (runif(npts) * 1)
+    z$y <- (runif(npts) * 1)
     okay <- FALSE
   }
 
