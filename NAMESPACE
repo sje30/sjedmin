@@ -1,0 +1,6 @@
+# This is default NAMESPACE file created.
+# Export all names
+exportPattern(".")
+
+## Load in the shared object; this used to be done in zzz.R
+useDynLib(sjedmin)
