@@ -2,7 +2,6 @@
 \documentclass[12pt]{article}
 
 %\VignetteIndexEntry{How to use look up tables for h() functions}
-%\VignetteDepends{sjedmin, spatstat}
 %\VignetteKeywords{h functions}
 %\VignettePackage{sjedmin}
 
@@ -184,17 +183,18 @@ qs <- quadscheme(amac.on, method="grid", ntile=c(40,30))
 x <- ppm(qs, ~1, PairPiece(r = rs), correction="isotropic")
 
 ## Now get the LUT entries.
-h <- summary(x)$interaction$printable
+## 2013-05-22, in future versions of spatstat, should do:
+## h <- exp(coef(fitin(x))); see email from Adrian.  (Version 1.31-3 of spatsat)
+h <- summary(x,quick=TRUE)$interaction$printable
 if (any(is.na(h)))
   h[which(is.na(h))] <- 0
 
 x <- apply(rbind(rs, c(0, rs[1:(length(rs)-1)])), 2, mean)
 
 
-
 ## Now simulate using (x,h) as a LUT.
 p <- pipp.lookup(n1=amac.on$n, pts=NULL,
-                 w=c(amac.on$window[2]$xrange, amac.on$window[3]$yrange),
+                 w=c(amac.on$window$xrange, amac.on$window$yrange),
                  h=h, d=x,nsweeps=10, verbose=F)
 
 @ 
