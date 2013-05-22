@@ -1,0 +1,8 @@
+Package: sjedmin
+Version: 0.2
+Title: Compute dmin mosaics
+Author: Stephen Eglen <stephen@gnu.org>
+Maintainer: Stephen Eglen <stephen@gnu.org>
+Description: Compute dmin mosaics
+License: GPL
+Suggests: spatstat
