@@ -1,8 +1,8 @@
 Package: sjedmin
 Version: 0.21
 Title: Compute dmin mosaics
-Author: Stephen Eglen <stephen@gnu.org>
-Maintainer: Stephen Eglen <stephen@gnu.org>
+Author: Stephen Eglen <stephen@cam.ac.uk>
+Maintainer: Stephen Eglen <stephen@cam.ac.uk>
 Description: Compute dmin mosaics
 License: GPL
 Suggests: 
