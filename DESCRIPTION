@@ -5,4 +5,8 @@ Author: Stephen Eglen <stephen@gnu.org>
 Maintainer: Stephen Eglen <stephen@gnu.org>
 Description: Compute dmin mosaics
 License: GPL
-Suggests: spatstat
+Suggests: 
+    spatstat,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
