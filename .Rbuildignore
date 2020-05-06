@@ -1,1 +1,4 @@
 ^\.travis\.yml$
+^doc$
+^Meta$
+extras/
