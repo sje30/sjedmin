@@ -3,6 +3,7 @@
 %\VignetteIndexEntry{How to use look up tables for h() functions}
 %\VignetteKeywords{h functions}
 %\VignettePackage{sjedmin}
+%\VignetteEngine{knitr::knitr}
 
 
 \usepackage{mathptmx}
@@ -36,6 +37,7 @@ form}
 
 <<echo=F>>=
 library(sjedmin)
+library(knitr)
 @ 
 
 The h function can be used in a pairwise interaction point process
