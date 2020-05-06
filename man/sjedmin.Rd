@@ -73,7 +73,7 @@ r1 <- 12; r2 <- 50 ## radii of cells
 d <- dminlulfix2(dmin=2*r1, dminsd=0.01, d12=r1+r2, npts=800,
                  w=c(150, 900, 200, 1200),
                  p2=matrix(c (200,500, 800, 750, 700,500, 500, 1000),ncol=2))
-plot(d, r1=r1, r2=r2)
+plot.sjedmin2(d, r1=r1, r2=r2)
 
 r1 <- 8; r2 <- 50;  d12 <- r1+r2; dmin <- r1*2
 p2 <- matrix(c (200, 500, 630, 400,    700, 500, 800, 760),ncol=2)
@@ -81,7 +81,7 @@ d <- dminlulfix2(w = c( 100, 800, 400, 900),
                  npts = 700,
                  dmin = dmin, dminsd = 0.0001,
                  lower=12, upper=-1, d12=d12, p2=p2)
-plot(d, r1=r1, r2=r2)
+plot.sjedmin2(d, r1=r1, r2=r2)
 
 ## Bivariate simulation.
 plot(bdmin.bd(n1=50, n2=30, d1=50, d2=30, d12=80, nsweeps=20))
