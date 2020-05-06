@@ -1,15 +1,10 @@
-% -*- mode: noweb; noweb-default-code-mode: R-mode; -*-
 \documentclass[12pt]{article}
 
 %\VignetteIndexEntry{How to use look up tables for h() functions}
 %\VignetteKeywords{h functions}
 %\VignettePackage{sjedmin}
 
-\SweaveOpts{echo=T,pdf=T,eps=F,eval=T}
 
-%% By including Sweave.sty myself, I can then override fonts loaded by that
-%% package, and use times.
-\usepackage{Sweave}
 \usepackage{mathptmx}
 
 \usepackage[a4paper,margin=2cm,noheadfoot]{geometry}
@@ -80,7 +75,7 @@ function, it would be better to use d values at 19.99 and 20.01).
 Here is a more natural example, using the h() parameterisation
 suggested by Peter recently.
 
-<<fig=TRUE>>=
+<<>>=
 hpar <- function(d,theta) {
   ## Choice of h() suggested by Peter.
   delta<-theta[1]
@@ -137,13 +132,13 @@ p <- pipp.lookup(w=w, n1=npts, pts=NULL,
                  h=y.lut, d=x.lut, nsweeps=10, verbose=F)
 @ 
 
-<<fig=TRUE>>=
+<<>>=
 plot(p)
 @ 
 
 Compare this with a plot where the interactions are over smaller
 distances:
-<<fig=TRUE>>=
+<<>>=
 p <- pipp.lookup(w=w, n1=npts, pts=NULL,
                  h=hpar(x.lut, theta=c(35, 50, 1)), 
                  d=x.lut, nsweeps=10, verbose=F)
@@ -199,7 +194,7 @@ p <- pipp.lookup(n1=amac.on$n, pts=NULL,
 
 @ 
 
-<<fig=TRUE>>=
+<<>>=
 par(mfrow=c(2,2))
 plot(amac.on)
 plot(x, h, main='non par estimate of h() for amac.on', type='l')
@@ -215,7 +210,7 @@ simulating bivariate patterns: $h_{11}$ for interactions between type
 between the two types of cells.  The arguments to pipp2.lookup are
 similar to those for pipp.lookupm, as the following example demonstrates:
 
-<<fig=TRUE,width=8>>=
+<<fig.width=8>>=
 w <- c(0, 1000, 0, 1000)
 n1 <- 100; n2 <- 100
 h11.x <- seq(from=0, to=150, by=10)
@@ -245,7 +240,7 @@ plot(p)
 
 As a curious example, if we make the inhibition distance for $h_{12}$
 much larger than the homotypic h() functions, we get clustering of cells:
-<<fig=TRUE,width=8>>=
+<<fig.width=8>>=
 par(mfrow=c(1,2))
 h11.x <- seq(from=0, to=150, by=10)
 h11.y <- pnorm(h11.x, mean=60, sd=20)
@@ -285,7 +280,7 @@ In this example, I use a simple inhibition for h(), such that all
 points closer than 70 units are rejected.
 
 \setkeys{Gin}{width=1.0\textwidth}
-<<fig=TRUE>>=
+<<>>=
 w <- c(200, 1500, 300, 1000)
 npts <- 100
 
@@ -384,11 +379,11 @@ example.tor2 <- function(tor) {
 The next two plots show bivariate PIPP without and with toroidal
 conditions, using the same h functions as before.
 
-<<fig=TRUE>>=
+<<>>=
 example.tor2(tor=FALSE)
 @ 
 
-<<fig=TRUE>>=
+<<>>=
 example.tor2(tor=TRUE)
 @ 
 
