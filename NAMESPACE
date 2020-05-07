@@ -4,3 +4,9 @@ exportPattern("^[^\\.]")
 
 ## Load in the shared object; this used to be done in zzz.R
 useDynLib(sjedmin)
+
+S3method(plot, sjedmin)
+S3method(plot, sjedmin2)
+S3method(plot, pipp)
+S3method(plot, pipp2)
+S3method(plot, sjebdmin)

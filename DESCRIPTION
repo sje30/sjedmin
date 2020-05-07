@@ -3,7 +3,7 @@ Version: 0.21
 Title: Compute dmin mosaics
 Author: Stephen Eglen <stephen@cam.ac.uk>
 Maintainer: Stephen Eglen <stephen@cam.ac.uk>
-Description: Compute dmin mosaics
+Description: Compute dmin mosaics using various algorithms.
 License: GPL
 Suggests: 
     spatstat,

@@ -432,7 +432,7 @@ hlookup <- function(h, d, r) {
   z$res
 }
                     
-dminlul3d <- function(wid = 1000, ht = 1000, dep=1000, npts = 200,
+.dminlul3d <- function(wid = 1000, ht = 1000, dep=1000, npts = 200,
                       dmin = 20, dminsd = 2, lower = 0, upper = 100,
                       quiet = FALSE)
 {
@@ -502,7 +502,7 @@ plot.sjedmin2 <- function(x, ...) {
           inch=FALSE, add=TRUE, bg="black")
 }
 
-dminlulbd <- function(w, npts = 200,
+.dminlulbd <- function(w, npts = 200,
                     dmin = 20, dminsd = 2, lower = 0, upper = 100)
 {
   ## Birth and Death version of dminlul
@@ -546,12 +546,12 @@ dminlulbd <- function(w, npts = 200,
 }
 
 
-dminacc <- function(wid = 1000, ht = 1000, npts = 200,
+.dminacc <- function(wid = 1000, ht = 1000, npts = 200,
                     acc, dmax = 10, inc=1.0)
 {
   ## Shapiro et al. method for using acceptance function created directly
   ## from the K function of the exptl mosaic.  `acc' is the acceptance
-  ## function created by `make.acc' and dmax is the maximal distance over
+  ## function created by `.make.acc' and dmax is the maximal distance over
   ## which acceptance function is measured.  Cells with  NND greater than dmax
   ## are automatically accepted.
   attempt <- 1
@@ -593,7 +593,7 @@ dminacc <- function(wid = 1000, ht = 1000, npts = 200,
   res
 }
 
-make.acc <- function (l, dmax) {
+.make.acc <- function (l, dmax) {
   ## Make an acceptance function from a L function.
   ## This comes from the Shapiro et al. (1985) paper.
   ## This is useful for dmin.acc() and dminacc.bd()
@@ -603,7 +603,7 @@ make.acc <- function (l, dmax) {
 }
 
 
-dminacc.bd <- function(wid = 1000, ht = 1000, npts = 200,
+.dminacc.bd <- function(wid = 1000, ht = 1000, npts = 200,
                     acc, dmax = 10, inc=1.0)
 {
   ## Birth and death version of dminacc().
@@ -647,7 +647,7 @@ dminacc.bd <- function(wid = 1000, ht = 1000, npts = 200,
 }
 
 
-damac <- function(wid = 1000, ht = 1000, npts = 200,
+.damac <- function(wid = 1000, ht = 1000, npts = 200,
                   d1 = 10, upper = 20, beta = 1.5)
 {
   attempt <- 1
@@ -675,7 +675,7 @@ damac <- function(wid = 1000, ht = 1000, npts = 200,
   res
 }
 
-hamac <- function(t, lower, upper, beta)
+.hamac <- function(t, lower, upper, beta)
 {
   ## Test the hamac function in C.
   ## ts <- seq(0, 100, by=1);
@@ -692,7 +692,7 @@ hamac <- function(t, lower, upper, beta)
   z$h
 }
 
-sjennd <- function(x, y, a, b) {
+.sjennd <- function(x, y, a, b) {
   ## Call the Nearest neighbour distance function.
   ## x,y are  vectors of x,y coords of a group of points.  (a,b) is one point
   ## in space.  Return the id (and distance) of the point closest to (a,b).

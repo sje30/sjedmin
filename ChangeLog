@@ -1,3 +1,14 @@
+2013-05-09  Stephen Eglen  <stephen@gnu.org>
+
+	* R/zzz.R: Remove .First.lib() and use NAMESPACE instead to load 
+	shared object.  Update .Last.lib() to .onUnload().
+
+
+2012-07-23  Stephen Eglen  <stephen@gnu.org>
+
+	* src/sjedmin.c (dminlulbd): Count number of rejects; abort when
+	we can't fit any more points in.
+
 2004-06-23  Stephen Eglen  <stephen@anc.ed.ac.uk>
 
 	* src/sjedmin.c (pipp2_lookup): New routine.
