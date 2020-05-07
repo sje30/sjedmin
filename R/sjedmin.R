@@ -2,7 +2,7 @@
 ## Stephen Eglen
 
 
-dminmaxattempts <- 5                    #number of attempts before giving up.
+.dminmaxattempts <- 5                    #number of attempts before giving up.
 
 dminsd <- function(wid = 1000, ht = 1000, npts = 200,
                    dmin = 20, dminsd = 2)
@@ -10,7 +10,7 @@ dminsd <- function(wid = 1000, ht = 1000, npts = 200,
   attempt <- 1
   okay <- TRUE
   trying <- TRUE
-  while (trying && (attempt < dminmaxattempts)) {
+  while (trying && (attempt < .dminmaxattempts)) {
     z <- .C("dminsd",
             as.double(wid),
             as.double(ht),
@@ -28,9 +28,9 @@ dminsd <- function(wid = 1000, ht = 1000, npts = 200,
     else
       attempt <- attempt + 1
   }
-  if (attempt >= dminmaxattempts) {
+  if (attempt >= .dminmaxattempts) {
     cat(paste ("dminsd: ", dmin, dminsd, "fail after",
-                dminmaxattempts, "tries\n"))
+                .dminmaxattempts, "tries\n"))
     ## just make a random distribution instead of a nice mosaic.
     z$x <- (runif(npts) * wid)
     z$y <- (runif(npts) * ht)
@@ -54,7 +54,7 @@ dminl <- function(wid = 1000, ht = 1000, npts = 200,
   attempt <- 1
   okay <- TRUE
   trying <- TRUE
-  while (trying && (attempt < dminmaxattempts)) {
+  while (trying && (attempt < .dminmaxattempts)) {
     z <- .C("dminl",
             as.double(wid),
             as.double(ht),
@@ -73,9 +73,9 @@ dminl <- function(wid = 1000, ht = 1000, npts = 200,
     else
       attempt <- attempt + 1
   }
-  if (attempt >= dminmaxattempts) {
+  if (attempt >= .dminmaxattempts) {
     cat(paste ("dminl: ", dmin, dminsd, "fail after",
-                dminmaxattempts, "tries\n"))
+                .dminmaxattempts, "tries\n"))
     ## just make a random distribution instead of a nice mosaic.
     z$x <- (runif(npts) * wid)
     z$y <- (runif(npts) * ht)
@@ -103,7 +103,7 @@ dminlul <- function(w, npts = 200,
   attempt <- 1
   okay <- TRUE
   trying <- TRUE
-  while (trying && (attempt < dminmaxattempts)) {
+  while (trying && (attempt < .dminmaxattempts)) {
     z <- .C("dminlul",
             as.double(w),
             as.integer(npts),
@@ -122,9 +122,9 @@ dminlul <- function(w, npts = 200,
     else
       attempt <- attempt + 1
   }
-  if (attempt >= dminmaxattempts) {
+  if (attempt >= .dminmaxattempts) {
     cat(paste ("dminlul: ", dmin, dminsd, "fail after",
-                dminmaxattempts, "tries\n"))
+                .dminmaxattempts, "tries\n"))
     ## just make a random distribution instead of a nice mosaic.
     z$x <- (runif(npts) * 1)
     z$y <- (runif(npts) * 1)
@@ -152,7 +152,7 @@ dminlulfix2 <- function(w,
   attempt <- 1
   okay <- TRUE
   trying <- TRUE
-  while (trying && (attempt < dminmaxattempts)) {
+  while (trying && (attempt < .dminmaxattempts)) {
     z <- .C("dminlulfix2",
             as.double(w),
             as.integer(npts),
@@ -174,9 +174,9 @@ dminlulfix2 <- function(w,
     else
       attempt <- attempt + 1
   }
-  if (attempt >= dminmaxattempts) {
+  if (attempt >= .dminmaxattempts) {
     cat(paste ("dminlul: ", dmin, dminsd, "fail after",
-                dminmaxattempts, "tries\n"))
+                .dminmaxattempts, "tries\n"))
     ## just make a random distribution instead of a nice mosaic.
     z$x <- w[1] +  (runif(npts) * (w[2] - w[1]))
     z$y <- w[3] + (runif(npts) * (w[4] - w[3]))
@@ -222,7 +222,7 @@ bdmin.bd <- function(w=c(0, 1000, 0, 1000),
   attempt <- 1
   okay <- TRUE
   trying <- TRUE
-  while (trying && (attempt < dminmaxattempts)) {
+  while (trying && (attempt < .dminmaxattempts)) {
     z <- .C("bdmin_bd",
             as.double(w),
             as.integer(n1), as.integer(n2),
@@ -239,9 +239,9 @@ bdmin.bd <- function(w=c(0, 1000, 0, 1000),
     else
       attempt <- attempt + 1
   }
-  if (attempt >= dminmaxattempts) {
+  if (attempt >= .dminmaxattempts) {
     cat(paste ("bdmin: ", paste(params, collapse=' '), "fail after",
-                dminmaxattempts, "tries\n"))
+                .dminmaxattempts, "tries\n"))
     ## just make a random distribution
     z$x <- w[1] +  (runif(npts) * (w[2] - w[1]))
     z$y <- w[3] + (runif(npts) * (w[4] - w[3]))
@@ -292,7 +292,7 @@ pipp.lookup <- function(w=c(0, 1000, 0, 1000),
   attempt <- 1
   okay <- TRUE
   trying <- TRUE
-  while (trying && (attempt < dminmaxattempts)) {
+  while (trying && (attempt < .dminmaxattempts)) {
     z <- .C("pipp_lookup",
             as.double(w),
             as.integer(n1),
@@ -311,9 +311,9 @@ pipp.lookup <- function(w=c(0, 1000, 0, 1000),
     else
       attempt <- attempt + 1
   }
-  if (attempt >= dminmaxattempts) {
+  if (attempt >= .dminmaxattempts) {
     cat(paste ("pipp.lookup fail after", 
-                dminmaxattempts, "tries\n"))
+                .dminmaxattempts, "tries\n"))
     ## just make a random distribution
     z$x <- w[1] +  (runif(npts) * (w[2] - w[1]))
     z$y <- w[3] + (runif(npts) * (w[4] - w[3]))
@@ -360,7 +360,7 @@ pipp2.lookup <- function(w=c(0, 1000, 0, 1000),
   attempt <- 1
   okay <- TRUE
   trying <- TRUE
-  while (trying && (attempt < dminmaxattempts)) {
+  while (trying && (attempt < .dminmaxattempts)) {
     z <- .C("pipp2_lookup",
             as.double(w),
             as.integer(n1), as.integer(n2),
@@ -380,9 +380,9 @@ pipp2.lookup <- function(w=c(0, 1000, 0, 1000),
     else
       attempt <- attempt + 1
   }
-  if (attempt >= dminmaxattempts) {
+  if (attempt >= .dminmaxattempts) {
     cat(paste ("pipp2.lookup fail after", 
-                dminmaxattempts, "tries\n"))
+                .dminmaxattempts, "tries\n"))
     ## just make a random distribution
     z$x <- w[1] +  (runif(npts) * (w[2] - w[1]))
     z$y <- w[3] + (runif(npts) * (w[4] - w[3]))
@@ -440,7 +440,7 @@ dminlul3d <- function(wid = 1000, ht = 1000, dep=1000, npts = 200,
   attempt <- 1
   okay <- TRUE
   trying <- TRUE
-  while (trying && (attempt < dminmaxattempts)) {
+  while (trying && (attempt < .dminmaxattempts)) {
     z <- .C("dminlul3d",
             as.double(wid),
             as.double(ht),
@@ -462,9 +462,9 @@ dminlul3d <- function(wid = 1000, ht = 1000, dep=1000, npts = 200,
     else
       attempt <- attempt + 1
   }
-  if (attempt >= dminmaxattempts) {
+  if (attempt >= .dminmaxattempts) {
     cat(paste ("dminlul: ", dmin, dminsd, "fail after",
-                dminmaxattempts, "tries\n"))
+                .dminmaxattempts, "tries\n"))
     ## just make a random distribution instead of a nice mosaic.
     z$x <- (runif(npts) * wid)
     z$y <- (runif(npts) * ht)
@@ -509,7 +509,7 @@ dminlulbd <- function(w, npts = 200,
   attempt <- 1
   okay <- TRUE
   trying <- TRUE
-  while (trying && (attempt < dminmaxattempts)) {
+  while (trying && (attempt < .dminmaxattempts)) {
     z <- .C("dminlulbd",
             as.double(w),
             as.integer(npts),
@@ -527,9 +527,9 @@ dminlulbd <- function(w, npts = 200,
     else
       attempt <- attempt + 1
   }
-  if (attempt >= dminmaxattempts) {
+  if (attempt >= .dminmaxattempts) {
     cat(paste ("dminlulbd: ", dmin, dminsd, "fail after",
-                dminmaxattempts, "tries\n"))
+                .dminmaxattempts, "tries\n"))
     ## just make a random distribution instead of a nice mosaic.
     z$x <- (runif(npts) * 1)
     z$y <- (runif(npts) * 1)
@@ -557,7 +557,7 @@ dminacc <- function(wid = 1000, ht = 1000, npts = 200,
   attempt <- 1
   okay <- TRUE
   trying <- TRUE
-  while (trying && (attempt < dminmaxattempts)) {
+  while (trying && (attempt < .dminmaxattempts)) {
     z <- .C("dminacc",
             as.double(wid),
             as.double(ht),
@@ -575,9 +575,9 @@ dminacc <- function(wid = 1000, ht = 1000, npts = 200,
     else
       attempt <- attempt + 1
   }
-  if (attempt >= dminmaxattempts) {
+  if (attempt >= .dminmaxattempts) {
     cat(paste ("dminsd: ", dmin, dminsd, "fail after",
-                dminmaxattempts, "tries\n"))
+                .dminmaxattempts, "tries\n"))
     ## just make a random distribution instead of a nice mosaic.
     z$x <- (runif(npts) * wid)
     z$y <- (runif(npts) * ht)
@@ -610,7 +610,7 @@ dminacc.bd <- function(wid = 1000, ht = 1000, npts = 200,
   attempt <- 1
   okay <- TRUE
   trying <- TRUE
-  while (trying && (attempt < dminmaxattempts)) {
+  while (trying && (attempt < .dminmaxattempts)) {
     z <- .C("dminacc_bd",
             as.double(wid),
             as.double(ht),
@@ -628,9 +628,9 @@ dminacc.bd <- function(wid = 1000, ht = 1000, npts = 200,
     else
       attempt <- attempt + 1
   }
-  if (attempt >= dminmaxattempts) {
+  if (attempt >= .dminmaxattempts) {
     cat(paste ("dminacc.bd: ", dmax, "fail after",
-                dminmaxattempts, "tries\n"))
+                .dminmaxattempts, "tries\n"))
     ## just make a random distribution instead of a nice mosaic.
     z$x <- (runif(npts) * wid)
     z$y <- (runif(npts) * ht)
@@ -653,7 +653,7 @@ damac <- function(wid = 1000, ht = 1000, npts = 200,
   attempt <- 1
   okay <- TRUE
   trying <- TRUE
-  while (trying && (attempt < dminmaxattempts)) {
+  while (trying && (attempt < .dminmaxattempts)) {
     z <- .C("pairwise_amac",
             as.double(wid),
             as.double(ht),
