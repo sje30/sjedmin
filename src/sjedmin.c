@@ -100,7 +100,7 @@ void pairwise_amac(Sfloat *wid, Sfloat *ht, int *numcells,
 	x1 = xpts[j] - xpts[0]; y1 = ypts[j] - ypts[0];
 	dist = (sqrt((x1*x1) + (y1*y1)));
 	h_amac(&dist, xd1, p, b, &h1);
-	/*printf("xxx valu %lf\n", h1);*/
+	/*Rprintf("xxx valu %lf\n", h1);*/
 	h *= h1;
 	/*Rprintf("t %lf %lf %lf\n", dist, h, h1); */
 	/*h = 1;*/
@@ -121,7 +121,7 @@ void h_amac(Sfloat *t, Sfloat *xd1, Sfloat *p, Sfloat *b, Sfloat *h)
     *h = ( pow( ((*t-*xd1)/(*p-*xd1)), *b));
   else
     *h = 1.0;
-  /*printf("ret valu %lf\n", *h);*/
+  /*Rprintf("ret valu %lf\n", *h);*/
 }
 
 
@@ -188,7 +188,7 @@ void dminlulbd(Sfloat *pw, int *numcells,
 	    /* If we cannot fit more cells in, return and indicate error
 	     * by setting first x coordinate to negative value.
 	     */
-	    printf("dminlulbd error: num_rejects is too high (%s:%d)\n",
+	    Rprintf("dminlulbd error: num_rejects is too high (%s:%d)\n",
 		   __FILE__, __LINE__);
 	    xpts[0] = -1;
 	    RANDOUT;
@@ -248,7 +248,7 @@ void dminsd(Sfloat *pwid, Sfloat *pht, int *pnumcells,
 	  /* If we cannot fit more cells in, return and indicate error
 	   * by setting first x coordinate to negative value.
 	   */
-	  printf("dminsd error: num_rejects is too high (%s:%d)\n",
+	  Rprintf("dminsd error: num_rejects is too high (%s:%d)\n",
 		 __FILE__, __LINE__);
 	  xpts[0] = -1;
 	  RANDOUT;
@@ -320,7 +320,7 @@ void dminl(Sfloat *pwid, Sfloat *pht, int *pnumcells,
 	  /* If we cannot fit more cells in, return and indicate error
 	   * by setting first x coordinate to negative value.
 	   */
-	  printf("dminl error: num_rejects is too high (%s:%d)\n",
+	  Rprintf("dminl error: num_rejects is too high (%s:%d)\n",
 		 __FILE__, __LINE__);
 	  xpts[0] = -1;
 	  RANDOUT;
@@ -388,7 +388,7 @@ void dminlul(Sfloat *pw, int *pnumcells,
 	if ( (this_dmin > lower) &&
 	     ((upper <0) || (this_dmin < upper)))
 	  generate_dmin = 0;
-	/*else printf("dminlul: dmin %f outside range\n", this_dmin);*/
+	/*else Rprintf("dminlul: dmin %f outside range\n", this_dmin);*/
       }
 
       /*Rprintf("this val %lf\n", this_dmin); */
@@ -412,7 +412,7 @@ void dminlul(Sfloat *pw, int *pnumcells,
 	  /* If we cannot fit more cells in, return and indicate error
 	   * by setting first x coordinate to negative value.
 	   */
-	  printf("dminlul error: num_rejects is too high (%s:%d)\n",
+	  Rprintf("dminlul error: num_rejects is too high (%s:%d)\n",
 		 __FILE__, __LINE__);
 	  xpts[0] = -1;
 	  RANDOUT;
@@ -483,7 +483,7 @@ void dminlulfix2(Sfloat *pw, int *pnumcells,
 	if ( (this_dmin > lower) &&
 	     ((upper <0) || (this_dmin < upper)))
 	  generate_dmin = 0;
-	/*else printf("dminlul: dmin %f outside range\n", this_dmin);*/
+	/*else Rprintf("dminlul: dmin %f outside range\n", this_dmin);*/
       }
 
       /*Rprintf("this val %lf\n", this_dmin); */
@@ -507,7 +507,7 @@ void dminlulfix2(Sfloat *pw, int *pnumcells,
 	  /* If we cannot fit more cells in, return and indicate error
 	   * by setting first x coordinate to negative value.
 	   */
-	  printf("dminlul error: num_rejects is too high (%s:%d)\n",
+	  Rprintf("dminlul error: num_rejects is too high (%s:%d)\n",
 		 __FILE__, __LINE__);
 	  xpts[0] = -1;
 	  RANDOUT;
@@ -621,7 +621,7 @@ void bdmin_bd(Sfloat *pw, int *pn1, int *pn2,
 	  if ( (this_dmin > lower) &&
 	       ((upper <0) || (this_dmin < upper)))
 	    generate_dmin = 0;
-	  /*else printf("dminlul: dmin %f outside range\n", this_dmin);*/
+	  /*else Rprintf("dminlul: dmin %f outside range\n", this_dmin);*/
 	}
 
 	/* generate a trial position at random. */
@@ -771,7 +771,7 @@ void dminlul3d(Sfloat *pwid, Sfloat *pht, Sfloat *pdepth, int *pnumcells,
 	if ( (this_dmin > lower) &&
 	     ((upper <0) || (this_dmin < upper)))
 	  generate_dmin = 0;
-	/*else printf("dminlul: dmin %f outside range\n", this_dmin);*/
+	/*else Rprintf("dminlul: dmin %f outside range\n", this_dmin);*/
       }
 
       /*Rprintf("this val %lf\n", this_dmin); */
@@ -793,7 +793,7 @@ void dminlul3d(Sfloat *pwid, Sfloat *pht, Sfloat *pdepth, int *pnumcells,
 	  /* If we cannot fit more cells in, return and indicate error
 	   * by setting first x coordinate to negative value.
 	   */
-	  printf("dminlul error: num_rejects is too high\n");
+	  Rprintf("dminlul error: num_rejects is too high\n");
 	  xpts[0] = -1;
 	  RANDOUT;
 	  return;
