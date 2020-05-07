@@ -1,6 +1,7 @@
 \name{sjedmin}
 \alias{dminl}
 \alias{dminlul}
+\alias{bdmin.bd}
 \alias{plot.sjedmin}
 \title{Dmin mosaics}
 \description{
@@ -9,11 +10,17 @@
 \usage{
 dminl(wid, ht, npts, dmin, dminsd, quiet)
 dminlul(w, npts, dmin, dminsd, lower, upper, quiet)
-plot.sjedmin(res)
+bdmin.bd(w = c(0, 1000, 0, 1000), pts = NULL, n1 = 100, n2 =
+                   100, d1 = 20, d1.sd = 2, d2 = 20, d2.sd = 2, d12 = 12,
+                   d12.sd = -1, lower = 0, upper = -1, nsweeps = 10,
+                   verbose = FALSE)
+plot.sjedmin(x, ...)
 }
 \arguments{
   \item{wid,ht}{Width and height of the rectangular region to simulate.}
   \item{w}{A vector of length 4 giving: (xmin, xmax, ymin, ymax)}
+  \item{pts}{If not NULL, can be a matrix of N x 2 points to initialise
+    the birth and death algorithm.  For a bivariate simulation, N=N1+N2.}
   \item{npts}{Number of (2-d) points to generate.}
   \item{dmin,dminsd}{Mean and standard deviation of the dmin rule.}
   \item{lower,upper}{Lowest and highest possible values of dmin to
@@ -23,6 +30,16 @@ plot.sjedmin(res)
     if you want to take soma size into account.  If upper is negative,
     no upper bound on dmin values is imposed.}
   \item{quiet}{Set to true if you want no printout from routine.}
+  \item{n1,n2}{Number of points of type 1 and type 2 to simulate.}
+  \item{d1,d1.sd,d2,d2.sd}{Mean and s.d. of the dmin values for type 1
+    and type 2 points.}
+  \item{d12,d12.sd}{Mean and s.d. of minimal distance between type 1 and
+    type 2 points (the heterotypic interaction).}
+  \item{nsweeps}{Number of sweeps of the birth and death procedure.}
+  \item{verbose}{Set to true if you want printout from routine.}
+  \item{x}{An object returned from one of the dmin functions, to be
+    plotted.}
+  \item{...}{Extra arguments to pass to the plotting functions.}
 }
 \value{
   Res is a list with components:
