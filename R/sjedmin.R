@@ -260,12 +260,13 @@ bdmin.bd <- function(w=c(0, 1000, 0, 1000),
   res
 }
 
-plot.sjebdmin <- function(x) {
+plot.sjebdmin <- function(x, ...) {
   ## Plotting function for output from bdmin.bd.
   plot(x$x, x$y, asp=1, pch=19,
        main=title(paste("bdmin", paste(x$args$params, collapse='  '),
          ifelse(x$okay, "OK", "!OK")         )),
-       col= c( rep("green", x$n1), rep("orangered", x$n2)))
+       col= c( rep("green", x$n1), rep("orangered", x$n2)),
+       ...)
   rect( x$w[1], x$w[3], x$w[2], x$w[4], lty=2)
 }
 
@@ -400,17 +401,20 @@ pipp2.lookup <- function(w=c(0, 1000, 0, 1000),
   res
 }
 
-plot.pipp2 <- function(x) {
+plot.pipp2 <- function(x, ...) {
   ## Plotting function for output from pipp2.lookup().
   plot(x$x, x$y, asp=1, pch=19,
        main=title(paste("pipp2"), 
          ifelse(x$okay, "OK", "!OK") ),
-       col= c( rep("green", x$n1), rep("orangered", x$n2)))
+       col= c( rep("green", x$n1), rep("orangered", x$n2)),
+       ...)
   rect( x$w[1], x$w[3], x$w[2], x$w[4], lty=2)
 }
 
-plot.pipp <- function(x, main=NULL) {
+plot.pipp <- function(x, ...) {
   ## Plotting function for output from pipp.lookup().
+  main <- NULL #TODO -- fix this to insert properly
+  ## https://stackoverflow.com/questions/17390236/r-using-ellipsis-argument
   if (is.null(main)) {
     main <- paste("pipp", ifelse(x$okay, "OK", "!OK"))
   }
@@ -484,9 +488,10 @@ plot.sjedmin <- function(x, ...) {
 }
 
      
-plot.sjedmin2 <- function(x, r1=12, r2=r1) {
+plot.sjedmin2 <- function(x, ...) {
   ## Show the results of a dmin simulation.
   ## r1 is radius of cell 1; r2 is radius of cell 2.
+  r1=12; r2=r1 # TODO -- allow defaults to be changed by user in ...
   plot(NA, xlab='', ylab='',
        xlim=c(x$args$w[1], x$args$w[2]),
        ylim=c(x$args$w[3], x$args$w[4]),
