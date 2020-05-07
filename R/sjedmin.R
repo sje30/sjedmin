@@ -497,9 +497,9 @@ plot.sjedmin2 <- function(x, ...) {
        ylim=c(x$args$w[3], x$args$w[4]),
        asp=1,main=x$note)
   symbols(x$x, x$y, circles=rep(r1, length(x$x)),
-          inch=FALSE, add=TRUE)
+          inches=FALSE, add=TRUE)
   symbols(x$args$p2, circles=rep( r2, dim(x$args$p2)[1]),
-          inch=FALSE, add=TRUE, bg="black")
+          inches=FALSE, add=TRUE, bg="black")
 }
 
 .dminlulbd <- function(w, npts = 200,
@@ -576,7 +576,7 @@ plot.sjedmin2 <- function(x, ...) {
       attempt <- attempt + 1
   }
   if (attempt >= .dminmaxattempts) {
-    cat(paste ("dminsd: ", dmin, dminsd, "fail after",
+    cat(paste ("dminacc: ", acc, "fail after",
                 .dminmaxattempts, "tries\n"))
     ## just make a random distribution instead of a nice mosaic.
     z$x <- (runif(npts) * wid)
