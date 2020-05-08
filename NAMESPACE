@@ -10,3 +10,7 @@ S3method(plot, sjedmin2)
 S3method(plot, pipp)
 S3method(plot, pipp2)
 S3method(plot, sjebdmin)
+
+
+importFrom("graphics", "rect", "symbols", "title")
+importFrom("stats", "runif")
