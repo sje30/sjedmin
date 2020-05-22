@@ -8,6 +8,7 @@ by me since the early 2000s and I have finally released it on github
 in 2020.
 
 ```
+install.packages("remotes")
 remotes::install_github("sje30/sjedmin")
 ```
 
