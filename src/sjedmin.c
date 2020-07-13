@@ -885,7 +885,7 @@ void pipp_lookup(Sfloat *pw, int *pn,
 	  /* Accept this cell position. */
 	  looking = 0;
 	} else {
-	  if (this_cell_rejects++ > 99999) {
+	  if (this_cell_rejects++ > 9999) {
 	    /* Taking far too long to replace one cell, so error. */
 	    Rprintf("pipp_d: trouble converging %d\n", this_cell_rejects);
 	    *okay = 0;
