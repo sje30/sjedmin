@@ -2,11 +2,11 @@
 ## Stephen Eglen
 
 
-.dminmaxattempts <- 5                    #number of attempts before giving up.
+.dminmaxattempts <- 2                    #number of attempts before giving up.
 
-maxattempts <- function(v) {
-  .dminmaxattempts <<- v
-}
+## maxattempts <- function(v) {
+##   .dminmaxattempts <<- v
+## }
 
 dminsd <- function(wid = 1000, ht = 1000, npts = 200,
                    dmin = 20, dminsd = 2)
