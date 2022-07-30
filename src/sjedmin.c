@@ -958,7 +958,7 @@ Sfloat dist2d_tor(int tor, Sfloat x0, Sfloat y0,
   
 }
 
-Sfloat dist2d_tor_R(int *tor, Sfloat *x0, Sfloat *y0,
+void dist2d_tor_R(int *tor, Sfloat *x0, Sfloat *y0,
 		    Sfloat *x1, Sfloat *y1,
 		    Sfloat *wid, Sfloat *ht, Sfloat *d) {
   /* Wrapper function for R, so we can test easily. */
