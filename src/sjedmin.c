@@ -1,5 +1,4 @@
 #include <R.h>
-#include <S.h>			/* for seed_in, seed_out */
 
 /* Use the definitions by Venables & Ripley. */
 #  define RANDIN  seed_in((long *)NULL)
